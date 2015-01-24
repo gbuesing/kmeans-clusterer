@@ -112,6 +112,7 @@ class KMeansClusterer
     start_time = Time.now
 
     @clusters = pick_k_random_points.map {|point| Cluster.new(point) }
+    @clusters.each_with_index {|cluster, i| cluster.tag = i + 1 } # tag clusters as 1..k
 
     loop do
       @iterations +=1

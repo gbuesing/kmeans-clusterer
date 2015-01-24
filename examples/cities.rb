@@ -19,7 +19,7 @@ kmeans = KMeansClusterer.run(k, points, tags: tags, runs: runs)
 elapsed = Time.now - t
 
 kmeans.sorted_clusters.each do |cluster|
-  puts "\n---\n\n"
+  puts "\n#---\n\n"
   cluster.sorted_points.each do |point|
     puts point.tag
   end
