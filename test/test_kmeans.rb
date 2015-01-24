@@ -20,6 +20,18 @@ class TestKMeansClusterer < MiniTest::Test
     assert_equal 51.0, kmeans.sum_of_squares_error
   end
 
+  def test_silhouette_score
+    data = [
+      [7,8],
+      [-1,-4],
+      [3,2],
+      [-6,-9]
+    ] 
+    kmeans = KMeansClusterer.new(2, data, random_seed: 42)
+    kmeans.run
+    assert kmeans.silhouette_score > 0
+  end
+
 end
 
 
@@ -56,6 +68,17 @@ class TestCluster < MiniTest::Test
     c.add p1
     c.add p2
     assert_equal 382.0, c.sum_of_squares_error
+  end
+
+  def test_dissimilarity
+    c1 = KMeansClusterer::Cluster.new KMeansClusterer::Point.new([3,3])
+    p1 = KMeansClusterer::Point.new [1,2]
+    p2 = KMeansClusterer::Point.new [6, 5]
+    c1.add p1
+    c1.add p2
+
+    p3 = KMeansClusterer::Point.new [-7, -8]
+    assert c1.dissimilarity(p3) > c1.dissimilarity(p2)
   end
 
 end

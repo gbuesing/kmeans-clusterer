@@ -70,6 +70,11 @@ class KMeansClusterer
       (NArray.to_na(errors)**2).sum
     end
 
+    def dissimilarity point
+      distances = @points.map {|mypoint| mypoint.distance_from(point) }
+      distances.reduce(:+) / distances.length
+    end
+
     private
       def calculate_center_from_points
         mean = NArray[@points.map(&:data)].mean(1)
@@ -142,6 +147,17 @@ class KMeansClusterer
 
   def origin
     Point.new Array.new(@points[0].dimension, 0)
+  end
+
+  def silhouette_score
+    scores = @points.map do |point|
+      acluster, bcluster = sorted_clusters(point).slice(0,2)
+      a = acluster.dissimilarity(point)
+      b = bcluster.dissimilarity(point)
+      (b - a) / [a,b].max
+    end
+
+    scores.reduce(:+) / scores.length # mean score for all points
   end
 
   private
