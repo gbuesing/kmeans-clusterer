@@ -48,7 +48,7 @@ class KMeansClusterer
       end
     end
 
-    def add point
+    def << point
       point.cluster = self
       @points << point
     end
@@ -118,7 +118,7 @@ class KMeansClusterer
 
       @points.each do |point|
         cluster = closest_cluster(point)
-        cluster.add point
+        cluster << point
       end
 
       moves = clusters.map(&:recenter)

@@ -52,8 +52,8 @@ class TestCluster < MiniTest::Test
     c = KMeansClusterer::Cluster.new KMeansClusterer::Point.new([-5,-7])
     p1 = KMeansClusterer::Point.new [1,2]
     p2 = KMeansClusterer::Point.new [6, 5]
-    c.add p1
-    c.add p2
+    c << p1
+    c << p2
     dist = c.recenter
     assert dist > 0
     x, y = c.center[0], c.center[1]
@@ -65,8 +65,8 @@ class TestCluster < MiniTest::Test
     c = KMeansClusterer::Cluster.new KMeansClusterer::Point.new([-5,-7])
     p1 = KMeansClusterer::Point.new [1,2]
     p2 = KMeansClusterer::Point.new [6, 5]
-    c.add p1
-    c.add p2
+    c << p1
+    c << p2
     assert_equal 382.0, c.sum_of_squares_error
   end
 
@@ -74,8 +74,8 @@ class TestCluster < MiniTest::Test
     c1 = KMeansClusterer::Cluster.new KMeansClusterer::Point.new([3,3])
     p1 = KMeansClusterer::Point.new [1,2]
     p2 = KMeansClusterer::Point.new [6, 5]
-    c1.add p1
-    c1.add p2
+    c1 << p1
+    c1 << p2
 
     p3 = KMeansClusterer::Point.new [-7, -8]
     assert c1.dissimilarity(p3) > c1.dissimilarity(p2)
