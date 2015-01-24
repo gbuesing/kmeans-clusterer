@@ -119,6 +119,7 @@ class KMeansClusterer
       moves = clusters.map(&:recenter)
 
       break if moves.max < 0.001 # i.e., no movement
+      break if @iterations >= 300
 
       clusters.each(&:reset_points)
     end
