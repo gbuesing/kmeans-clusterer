@@ -9,6 +9,5 @@ TODO
 - more distance measures
 - silhouette coefficient
 - kmeans++ initialization
-- support multiple runs
 - more examples
 - add usage docs to README

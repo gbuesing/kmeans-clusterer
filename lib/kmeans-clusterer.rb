@@ -78,6 +78,14 @@ class KMeansClusterer
   end
 
 
+  def self.run k, points, opts = {}
+    points = points.map {|data| NArray.to_na(data) } # eagerly cast to NArray to reduce copies
+    runs = opts[:runs] || 8
+    outputs = runs.times.map { new(k, points, opts).run }
+    outputs.sort_by {|output| output.sum_of_squares_error }.first
+  end
+
+
   attr_reader :k, :points, :clusters, :iterations, :runtime
 
 
@@ -116,6 +124,7 @@ class KMeansClusterer
     end
 
     @runtime =  Time.now - start_time
+    self
   end
 
   def sum_of_squares_error
