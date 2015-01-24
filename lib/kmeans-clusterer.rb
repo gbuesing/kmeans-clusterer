@@ -78,7 +78,7 @@ class KMeansClusterer
   end
 
 
-  attr_reader :k, :points, :clusters
+  attr_reader :k, :points, :clusters, :iterations, :runtime
 
 
   def initialize k, points, opts = {}
@@ -91,16 +91,17 @@ class KMeansClusterer
     @points = points.map.with_index do |data, i|
       Point.new(data).tap {|p| p.tag = tags[i] }
     end
+
+    @iterations, @runtime = 0, 0
   end
 
   def run 
     start_time = Time.now
-    iterations = 0
 
     @clusters = pick_k_random_points.map {|point| Cluster.new(point) }
 
     loop do
-      iterations +=1
+      @iterations +=1
 
       @points.each do |point|
         cluster = closest_cluster(point)
@@ -114,7 +115,7 @@ class KMeansClusterer
       clusters.each(&:reset_points)
     end
 
-    {iterations: iterations, time: Time.now - start_time}
+    @runtime =  Time.now - start_time
   end
 
   def sum_of_squares_error

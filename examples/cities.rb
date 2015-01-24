@@ -14,7 +14,7 @@ CSV.foreach("examples/us_cities.csv") do |row|
 end
 
 kmeans = KMeansClusterer.new(k, points, tags: tags)
-run = kmeans.run
+kmeans.run
 
 kmeans.sorted_clusters.each do |cluster|
   puts "\n---\n\n"
@@ -23,4 +23,4 @@ kmeans.sorted_clusters.each do |cluster|
   end
 end
 
-puts "\n#{k} clusters in #{run[:iterations]} iterations, #{run[:time].round(2)}s, SSE #{kmeans.sum_of_squares_error.round(2)}"
+puts "\n#{k} clusters in #{kmeans.iterations} iterations, #{kmeans.runtime.round(2)}s, SSE #{kmeans.sum_of_squares_error.round(2)}"
