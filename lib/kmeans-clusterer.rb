@@ -4,7 +4,7 @@ class KMeansClusterer
 
   class Point
     attr_reader :data
-    attr_accessor :cluster, :tag
+    attr_accessor :cluster, :label
 
     def initialize data
       @data = NArray.to_na data
@@ -31,7 +31,7 @@ class KMeansClusterer
 
   class Cluster
     attr_reader :center, :points
-    attr_accessor :tag
+    attr_accessor :label
 
     def initialize center
       @center = center
@@ -83,26 +83,26 @@ class KMeansClusterer
   end
 
 
-  def self.run k, points, opts = {}
-    points = points.map {|data| NArray.to_na(data) } # eagerly cast to NArray to reduce copies
-    runs = opts[:runs] || 8
-    outputs = runs.times.map { new(k, points, opts).run }
-    outputs.sort_by {|output| output.sum_of_squares_error }.first
+  def self.run k, data, opts = {}
+    data = data.map {|instance| NArray.to_na(instance) } # eagerly cast to NArray to reduce copies
+    runcount = opts[:runs] || 8
+    runs = runcount.times.map { new(k, data, opts).run }
+    runs.sort_by {|run| run.sum_of_squares_error }.first
   end
 
 
   attr_reader :k, :points, :clusters, :iterations, :runtime
 
 
-  def initialize k, points, opts = {}
-    raise(ArgumentError, "k cannot be greater than the number of points") if k > points.length
+  def initialize k, data, opts = {}
+    raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
 
     @k = k
     @random = Random.new(opts[:random_seed] || Random.new_seed)
-    tags = opts[:tags] || []
+    labels = opts[:labels] || []
 
-    @points = points.map.with_index do |data, i|
-      Point.new(data).tap {|p| p.tag = tags[i] }
+    @points = data.map.with_index do |instance, i|
+      Point.new(instance).tap {|p| p.label = labels[i] }
     end
 
     @iterations, @runtime = 0, 0
@@ -112,7 +112,7 @@ class KMeansClusterer
     start_time = Time.now
 
     @clusters = pick_k_random_points.map {|point| Cluster.new(point) }
-    @clusters.each_with_index {|cluster, i| cluster.tag = i + 1 } # tag clusters as 1..k
+    @clusters.each_with_index {|cluster, i| cluster.label = i + 1 } # tag clusters as 1..k
 
     loop do
       @iterations +=1

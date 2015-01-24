@@ -8,20 +8,20 @@ require 'csv'
 k = (ARGV[0] || 20).to_i
 runs = (ARGV[1] || 10).to_i
 
-points, tags = [], []
+data, labels = [], []
 CSV.foreach("examples/us_cities.csv") do |row|
-  points << [row[2].to_f, row[3].to_f]
-  tags << "#{row[1]} #{row[0]}"
+  data << [row[2].to_f, row[3].to_f]
+  labels << "#{row[1]} #{row[0]}"
 end
 
 t = Time.now
-kmeans = KMeansClusterer.run(k, points, tags: tags, runs: runs)
+kmeans = KMeansClusterer.run(k, data, labels: labels, runs: runs)
 elapsed = Time.now - t
 
 kmeans.sorted_clusters.each do |cluster|
   puts "\n#---\n\n"
   cluster.sorted_points.each do |point|
-    puts point.tag
+    puts point.label
   end
 end
 
