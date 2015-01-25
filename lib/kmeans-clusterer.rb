@@ -85,7 +85,7 @@ class KMeansClusterer
 
     private
       def calculate_center_from_points
-        mean = NArray[@points.map(&:data)].mean(1)
+        mean = NArray.to_na(@points.map(&:data)).mean(1)
         Point.new(mean)
       end
   end
