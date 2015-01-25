@@ -70,12 +70,16 @@ class KMeansClusterer
     end
 
     def sorted_points
-      points.sort_by {|point| distance_from_center(point) }
+      @points.sort_by {|point| distance_from_center(point) }
     end
 
     def sum_of_squares_error
-      errors = points.map {|point| distance_from_center(point) }
-      (NArray.to_na(errors)**2).sum
+      if @points.empty?
+        0
+      else
+        errors = @points.map {|point| distance_from_center(point) }
+        (NArray.to_na(errors)**2).sum
+      end
     end
 
     def dissimilarity point

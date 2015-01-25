@@ -64,6 +64,11 @@ class TestCluster < MiniTest::Test
     assert_equal 382.0, c.sum_of_squares_error
   end
 
+  def test_sum_of_squares_error_when_no_points
+    c = KMeansClusterer::Cluster.new KMeansClusterer::Point.new([-5,-7])
+    assert_equal 0, c.sum_of_squares_error
+  end
+
   def test_dissimilarity
     c1 = KMeansClusterer::Cluster.new KMeansClusterer::Point.new([3,3])
     p1 = KMeansClusterer::Point.new [1,2]
