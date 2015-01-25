@@ -162,6 +162,8 @@ class KMeansClusterer
   end
 
   def silhouette_score
+    return 1.0 if @clusters.length < 2
+    
     scores = @points.map do |point|
       acluster, bcluster = sorted_clusters(point).slice(0,2)
       a = acluster.dissimilarity(point)
