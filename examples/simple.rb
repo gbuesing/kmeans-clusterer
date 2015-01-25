@@ -17,7 +17,7 @@ result = KMeansClusterer.run 4, data
 
 result.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + # label 1-k
-        cluster.center.to_s + "\t" + 
+        cluster.center.to_s + ": " + 
         cluster.points.join(", ")
 end
 
@@ -32,8 +32,11 @@ puts "Silhouette score: #{result.silhouette_score.round(2)}"
 
 puts "\nCities:\n\n"
 
-data = [[40.71,-74.01], [34.05,-118.24], [39.29,-76.61], [45.52,-122.68], [38.9,-77.04], [36.11,-115.17]]
-labels = ['New York', 'Los Angeles', 'Baltimore', 'Portland', 'Washington DC', 'Las Vegas']
+data = [[40.71,-74.01], [34.05,-118.24], [39.29,-76.61], 
+        [45.52,-122.68], [38.9,-77.04], [36.11,-115.17]]
+
+labels = ['New York', 'Los Angeles', 'Baltimore', 
+          'Portland', 'Washington DC', 'Las Vegas']
 
 result = KMeansClusterer.run 2, data, labels: labels, runs: 1
 
