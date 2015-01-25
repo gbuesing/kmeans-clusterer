@@ -12,13 +12,14 @@ data = [
   [4, 4], [-4, 4], [4, -4], [-4, -4],
 ]
 
-kmeans = KMeansClusterer.run 4, data
+result = KMeansClusterer.run 4, data
 
-kmeans.clusters.each do |cluster|
+result.clusters.each do |cluster|
   puts cluster.points.join(', ')
 end
 
-puts "\nSSE #{kmeans.sum_of_squares_error.round(2)}, silhouette score: #{kmeans.silhouette_score.round(2)}"
+puts "\nSSE: #{result.sum_of_squares_error.round(2)}"
+puts "Silhouette score: #{result.silhouette_score.round(2)}"
 
 # Outputs:
 # [3, 3], [3, 4], [4, 3]
