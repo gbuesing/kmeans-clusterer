@@ -14,6 +14,14 @@ class KMeansClusterer
       @data[index]
     end
 
+    def to_a
+      @data.to_a
+    end
+
+    def to_s
+      to_a.to_s
+    end
+
     def dimension
       @data.length
     end
