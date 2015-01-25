@@ -1,7 +1,7 @@
 KMeansClusterer
 ===
 
-KMeans clustering in Ruby. Uses [NArray](https://github.com/masa16/narray) under the hood for fast calculations.
+[KMeans clustering](http://en.wikipedia.org/wiki/K-means_clustering) in Ruby. Uses [NArray](https://github.com/masa16/narray) under the hood for fast calculations.
 
 Runs multiple clusterings and returns run with lowest error, to avoid converging on local minimum.
 

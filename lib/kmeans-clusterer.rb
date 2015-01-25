@@ -106,7 +106,6 @@ class KMeansClusterer
     raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
 
     @k = k
-    @random = Random.new(opts[:random_seed] || Random.new_seed)
     labels = opts[:labels] || []
 
     @points = data.map.with_index do |instance, i|
@@ -178,7 +177,7 @@ class KMeansClusterer
 
     def pick_k_random_indexes
       indexes = @points.length.times.to_a
-      indexes.shuffle! random: @random
+      indexes.shuffle!
       indexes.slice(0, @k)
     end
 end

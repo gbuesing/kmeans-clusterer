@@ -8,28 +8,22 @@ class TestKMeansClusterer < MiniTest::Test
 
   def test_clustering
     data = [
-      [7,8],
-      [-1,-4],
-      [3,2],
-      [-6,-9]
-    ] 
-    kmeans = KMeansClusterer.new(2, data, random_seed: 42)
-    kmeans.run
-    assert_equal kmeans.points[0].cluster, kmeans.points[2].cluster
-    assert_equal kmeans.points[1].cluster, kmeans.points[3].cluster
-    assert_equal 51.0, kmeans.sum_of_squares_error
-  end
+      [3, 3], [-3, 3], [3, -3], [-3, -3],
+      [3, 4], [-3, 4], [3, -4], [-3, -4],
+      [4, 3], [-4, 3], [4, -3], [-4, -3],
+      [4, 4], [-4, 4], [4, -4], [-4, -4],
+    ]
 
-  def test_silhouette_score
-    data = [
-      [7,8],
-      [-1,-4],
-      [3,2],
-      [-6,-9]
-    ] 
-    kmeans = KMeansClusterer.new(2, data, random_seed: 42)
-    kmeans.run
-    assert kmeans.silhouette_score > 0
+    kmeans = KMeansClusterer.run 4, data
+    
+    kmeans.clusters.each do |cluster|
+      xs, ys = cluster.points.map {|p| p[0]}, cluster.points.map {|p| p[1]}
+      assert (xs.inject(1) {|m, v| m * v}) > 0 # i.e., ensure xs are all same sign
+      assert (ys.inject(1) {|m, v| m * v}) > 0 # i.e., ensure ys are all same sign
+    end
+
+    assert_in_delta 8.0, kmeans.sum_of_squares_error
+    assert_in_delta 0.873, kmeans.silhouette_score
   end
 
 end
