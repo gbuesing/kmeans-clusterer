@@ -158,6 +158,7 @@ class KMeansClusterer
   end
 
   def sorted_clusters point = origin
+    point = Point.new(point) unless point.is_a?(Point)
     centers = get_cluster_centers
     distances = EuclideanDistance.call(centers, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }

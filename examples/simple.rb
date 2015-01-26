@@ -42,8 +42,14 @@ kmeans = KMeansClusterer.run 2, data, labels: labels, runs: 1
 
 kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + 
-        cluster.points.map(&:label).join(", ")
+        cluster.points.map(&:label).join(", ") + "\t" +
+        cluster.center.to_a.map {|v| v.round(2)}.to_s
 end
+
+# Use existing clusters for prediction with new data:
+cluster = kmeans.closest_cluster [41.85,-87.65] # Chicago
+puts "\nClosest cluster to Chicago: #{cluster.label}"
 
 puts "\nSSE: #{kmeans.sum_of_squares_error.round(2)}"
 puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
+

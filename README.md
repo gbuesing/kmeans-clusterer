@@ -22,27 +22,34 @@ k = 2 # find 2 clusters in data
 # Options:
 #   labels: array of Ruby objects to collate with data array
 #   runs: number of times to run kmeans (default is 10)
+#   init: algorithm for picking initial cluster centers, 
+#         :kmpp (k-means++, default) or :random
 kmeans = KMeansClusterer.run k, data, labels: labels, runs: 3
 
 kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + 
-        cluster.points.map(&:label).join(", ")
+        cluster.points.map(&:label).join(", ") + "\t" +
+        cluster.center.to_s
 end
 
+# Use existing clusters for prediction with new data:
+cluster = kmeans.closest_cluster [41.85,-87.65] # Chicago
+puts "\nClosest cluster to Chicago: #{cluster.label}"
+
+# Clustering quality score. Value between -1.0..1.0 (1.0 is best)
 puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
 
 # Outputs:
 #
-# 1. Los Angeles, Portland, Las Vegas
-# 2. New York, Baltimore, Washington DC
+# 1. New York, Baltimore, Washington DC [39.63, -75.89]
+# 2. Los Angeles, Portland, Las Vegas [38.56, -118.7]
+#
+# Closest cluster to Chicago: 1
 #
 # Silhouette score: 0.91
 ```
 
 
-TODO
+License
 ---
-- more distance measures
-- mini batch
-- kmeans++ initialization
-- more examples
+MIT
