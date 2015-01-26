@@ -1,9 +1,12 @@
 KMeansClusterer
 ===
 
-[k-means clustering](http://en.wikipedia.org/wiki/K-means_clustering) in Ruby. Uses [NArray](https://github.com/masa16/narray) under the hood for fast calculations.
+[k-means](http://en.wikipedia.org/wiki/K-means_clustering) and [k-medians](http://en.wikipedia.org/wiki/K-medians_clustering) clustering in Ruby. Uses [NArray](https://github.com/masa16/narray) under the hood for fast calculations.
 
-Runs multiple clustering attempts with different initial centerpoints and returns run with lowest error. This helps ensure that k-means will return optimal clustering for k, vs. getting stuck in a local minimum.
+Features:
+- Runs multiple clustering attempts to find optimal solution (single runs are susceptible to falling into non-optimal local minima)
+- Initializes centroids via [k-means++](http://en.wikipedia.org/wiki/K-means%2B%2B) algorithm
+- Calculates [silhouette](http://en.wikipedia.org/wiki/Silhouette_%28clustering%29) score for evaluation
 
 
 Usage
@@ -24,7 +27,7 @@ k = 2 # find 2 clusters in data
 #   runs: number of times to run kmeans (default is 10)
 #   init: algorithm for picking initial cluster centers, 
 #         :kmpp (k-means++, default) or :random
-kmeans = KMeansClusterer.run k, data, labels: labels, runs: 3
+kmeans = KMeansClusterer.run k, data, labels: labels, runs: 10
 
 kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + 
@@ -48,6 +51,17 @@ puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
 #
 # Silhouette score: 0.91
 ```
+
+k-medians clustering is available via ```KMediansClusterer``, which has the same api
+as ```KMeansClusterer```:
+
+```ruby
+# same api as KMeansClusterer
+kmedians = KMediansClusterer.run k, data, labels: labels, runs: 10
+```
+
+k-medians uses the Manhattan distance measure instead of Euclidean distance
+and calculates centroids via the median of points instead of the mean.
 
 
 License
