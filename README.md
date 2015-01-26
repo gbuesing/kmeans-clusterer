@@ -5,7 +5,7 @@ KMeansClusterer
 
 Features:
 - Runs multiple clustering attempts to find optimal solution (single runs are susceptible to falling into non-optimal local minima)
-- Initializes centroids via [k-means++](http://en.wikipedia.org/wiki/K-means%2B%2B) algorithm
+- Initializes centroids via [k-means++](http://en.wikipedia.org/wiki/K-means%2B%2B) algorithm, for faster convergence
 - Calculates [silhouette](http://en.wikipedia.org/wiki/Silhouette_%28clustering%29) score for evaluation
 
 
@@ -52,7 +52,7 @@ puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
 # Silhouette score: 0.91
 ```
 
-k-medians clustering is available via ```KMediansClusterer``, which has the same api
+k-medians clustering is available via ```KMediansClusterer```, which has the same api
 as ```KMeansClusterer```:
 
 ```ruby
@@ -60,7 +60,7 @@ as ```KMeansClusterer```:
 kmedians = KMediansClusterer.run k, data, labels: labels, runs: 10
 ```
 
-k-medians uses the Manhattan distance measure instead of Euclidean distance
+k-medians uses the Manhattan distance measure instead of Euclidean distance,
 and calculates centroids via the median of points instead of the mean.
 
 
