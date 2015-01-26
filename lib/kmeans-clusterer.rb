@@ -112,13 +112,13 @@ class KMeansClusterer
     @points = data.map.with_index do |instance, i|
       Point.new instance, labels[i]
     end
+
+    init_clusters
   end
 
   def run 
     start_time = Time.now
     @iterations, @runtime = 0, 0
-
-    init_clusters
 
     loop do
       @iterations +=1
