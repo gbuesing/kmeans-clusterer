@@ -129,7 +129,7 @@ class KMeansClusterer
     loop do
       @iterations +=1
 
-      centers = NArray.to_na @clusters.map {|c| c.center.data }
+      centers = get_cluster_centers
 
       @points.each do |point|
         distances = EuclideanDistance.call(centers, point.data)
@@ -158,7 +158,7 @@ class KMeansClusterer
   end
 
   def sorted_clusters point = origin
-    centers = NArray.to_na @clusters.map {|c| c.center.data }
+    centers = get_cluster_centers
     distances = EuclideanDistance.call(centers, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
@@ -189,7 +189,7 @@ class KMeansClusterer
       @clusters << Cluster.new(center, 1)
 
       while @clusters.length < @k
-        centers = NArray.to_na @clusters.map {|c| c.center.data }
+        centers = get_cluster_centers
 
         d2 = @points.map do |point|
           dists = EuclideanDistance.call centers, point.data
@@ -217,5 +217,9 @@ class KMeansClusterer
 
     def pick_k_random_indexes
       @points.length.times.to_a.shuffle.slice(0, @k)
+    end
+
+    def get_cluster_centers
+      NArray.to_na @clusters.map {|c| c.center.data }
     end
 end
