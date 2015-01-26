@@ -113,12 +113,11 @@ class KMeansClusterer
     @points = data.map.with_index do |instance, i|
       Point.new instance, labels[i]
     end
-
-    @iterations, @runtime = 0, 0
   end
 
   def run 
     start_time = Time.now
+    @iterations, @runtime = 0, 0
 
     if @init == :kmpp
       kmpp_cluster_init
