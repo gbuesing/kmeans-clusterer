@@ -118,11 +118,7 @@ class KMeansClusterer
     start_time = Time.now
     @iterations, @runtime = 0, 0
 
-    if @init == :kmpp
-      kmpp_cluster_init
-    else
-      random_cluster_init
-    end
+    init_clusters
 
     loop do
       @iterations +=1
@@ -180,6 +176,17 @@ class KMeansClusterer
   end
 
   private
+    def init_clusters
+      case @init
+      when :random
+        random_cluster_init
+      when Array
+        custom_cluster_init
+      else
+        kmpp_cluster_init
+      end
+    end
+
     # k-means++
     def kmpp_cluster_init
       @clusters = []
@@ -203,6 +210,13 @@ class KMeansClusterer
         center = Point.new @points[pick].data.to_a
         cluster = Cluster.new(center, @clusters.length + 1)
         @clusters << cluster
+      end
+    end
+
+    def custom_cluster_init
+      @clusters = @init.map.with_index do |instance, i|
+        point = Point.new instance
+        Cluster.new point, i+1
       end
     end
 
