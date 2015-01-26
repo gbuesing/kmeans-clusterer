@@ -95,7 +95,7 @@ class KMeansClusterer
 
   def self.run k, data, opts = {}
     raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
-    data = data.map {|instance| NArray.to_na(instance) } # eagerly cast to NArray to reduce copies
+    data = data.map {|instance| NArray.to_na(instance).to_f } # eagerly cast to NArray to reduce copies
     runcount = opts[:runs] || 10
     runs = runcount.times.map { new(k, data, opts).run }
     runs.sort_by(&:sum_of_squares_error).first
