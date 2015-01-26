@@ -154,7 +154,9 @@ class KMeansClusterer
   end
 
   def sorted_clusters point = origin
-    @clusters.sort_by {|c| c.distance_from_center(point) }
+    centers = NArray.to_na @clusters.map {|c| c.center.data }
+    distances = NMath.sqrt ((centers - point.data)**2).sum(0) # euclidean distance calc in batch
+    @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
   def origin
