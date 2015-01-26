@@ -4,7 +4,7 @@ class KMeansClusterer
 
   # Euclidean distance function. Requires instances of NArray as args
   Distance = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
-  Center = -> (a) { a.mean(1) }
+  Centroid = -> (a) { a.mean(1) }
 
   class Point
     attr_reader :data
@@ -34,11 +34,11 @@ class KMeansClusterer
 
 
   class Cluster
-    attr_reader :center, :points
+    attr_reader :centroid, :points
     attr_accessor :label
 
-    def initialize center, label = nil
-      @center = center
+    def initialize centroid, label = nil
+      @centroid = centroid
       @label = label
       @points = []
     end
@@ -47,9 +47,9 @@ class KMeansClusterer
       if @points.empty?
         0
       else
-        old_center = @center
-        @center = calculate_center_from_points
-        Distance.call @center.data, old_center.data
+        old_centroid = @centroid
+        @centroid = calculate_centroid_from_points
+        Distance.call @centroid.data, old_centroid.data
       end
     end
 
@@ -63,7 +63,7 @@ class KMeansClusterer
     end
 
     def sorted_points
-      distances = Distance.call points_narray, center.data
+      distances = Distance.call points_narray, centroid.data
       @points.sort_by.with_index {|c, i| distances[i] }
     end
 
@@ -71,7 +71,7 @@ class KMeansClusterer
       if @points.empty?
         0
       else
-        distances = Distance.call points_narray, center.data
+        distances = Distance.call points_narray, centroid.data
         (distances**2).sum
       end
     end
@@ -82,8 +82,8 @@ class KMeansClusterer
     end
 
     private
-      def calculate_center_from_points
-        data = Center.call points_narray
+      def calculate_centroid_from_points
+        data = Centroid.call points_narray
         Point.new data
       end
 
@@ -124,10 +124,10 @@ class KMeansClusterer
     loop do
       @iterations +=1
 
-      centers = get_cluster_centers
+      centroids = get_cluster_centroids
 
       @points.each do |point|
-        distances = Distance.call(centers, point.data)
+        distances = Distance.call(centroids, point.data)
         cluster = @clusters.sort_by.with_index {|c, i| distances[i] }.first
         cluster << point
       end
@@ -154,8 +154,8 @@ class KMeansClusterer
 
   def sorted_clusters point = origin
     point = Point.new(point) unless point.is_a?(Point)
-    centers = get_cluster_centers
-    distances = Distance.call(centers, point.data)
+    centroids = get_cluster_centroids
+    distances = Distance.call(centroids, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
@@ -192,14 +192,14 @@ class KMeansClusterer
     def kmpp_cluster_init
       @clusters = []
       pick = rand(@points.length)
-      center = Point.new @points[pick].data.to_a
-      @clusters << Cluster.new(center, 1)
+      centroid = Point.new @points[pick].data.to_a
+      @clusters << Cluster.new(centroid, 1)
 
       while @clusters.length < @k
-        centers = get_cluster_centers
+        centroids = get_cluster_centroids
 
         d2 = @points.map do |point|
-          dists = Distance.call centers, point.data
+          dists = Distance.call centroids, point.data
           dists.min**2 # closest cluster distance, squared
         end
 
@@ -208,8 +208,8 @@ class KMeansClusterer
         cumprobs = probs.cumsum
         r = rand
         pick = cumprobs.to_a.index {|prob| r < prob }
-        center = Point.new @points[pick].data.to_a
-        cluster = Cluster.new(center, @clusters.length + 1)
+        centroid = Point.new @points[pick].data.to_a
+        cluster = Cluster.new(centroid, @clusters.length + 1)
         @clusters << cluster
       end
     end
@@ -222,7 +222,7 @@ class KMeansClusterer
     end
 
     def random_cluster_init
-      @clusters = pick_k_random_points.map.with_index {|center, i| Cluster.new center, i+1 }
+      @clusters = pick_k_random_points.map.with_index {|centroid, i| Cluster.new centroid, i+1 }
     end
 
     def pick_k_random_points
@@ -233,12 +233,12 @@ class KMeansClusterer
       @points.length.times.to_a.shuffle.slice(0, @k)
     end
 
-    def get_cluster_centers
-      NArray.to_na @clusters.map {|c| c.center.data }
+    def get_cluster_centroids
+      NArray.to_na @clusters.map {|c| c.centroid.data }
     end
 end
 
 class KMediansClusterer < KMeansClusterer
   Distance = -> (a, b) { (a - b).abs.sum(0) }
-  Center = -> (a) { a.rot90.median(0) }
+  Centroid = -> (a) { a.rot90.median(0) }
 end

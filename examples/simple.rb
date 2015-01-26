@@ -17,7 +17,7 @@ kmeans = KMeansClusterer.run 4, data
 
 kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + # label 1-k
-        cluster.center.to_s + ": " + 
+        cluster.centroid.to_s + ": " + 
         cluster.points.join(", ")
 end
 
@@ -31,7 +31,7 @@ puts "\nk-medians:\n\n"
 kmedians = KMediansClusterer.run 4, data
 kmedians.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + # label 1-k
-        cluster.center.to_s + ": " + 
+        cluster.centroid.to_s + ": " + 
         cluster.points.join(", ")
 end
 
@@ -59,7 +59,7 @@ kmeans = KMeansClusterer.run 2, latlngs, labels: labels, runs: 1
 kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + 
         cluster.points.map(&:label).join(", ") + "\t" +
-        cluster.center.to_a.map {|v| v.round(2)}.to_s
+        cluster.centroid.to_a.map {|v| v.round(2)}.to_s
 end
 
 # Use existing clusters for prediction with new data:

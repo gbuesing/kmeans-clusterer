@@ -25,14 +25,14 @@ k = 2 # find 2 clusters in data
 # Options:
 #   labels: array of Ruby objects to collate with data array
 #   runs: number of times to run kmeans (default is 10)
-#   init: algorithm for picking initial cluster centers, 
+#   init: algorithm for picking initial cluster centroids, 
 #         :kmpp (k-means++, default) or :random
 kmeans = KMeansClusterer.run k, data, labels: labels, runs: 10
 
 kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + 
         cluster.points.map(&:label).join(", ") + "\t" +
-        cluster.center.to_s
+        cluster.centroid.to_s
 end
 
 # Use existing clusters for prediction with new data:
