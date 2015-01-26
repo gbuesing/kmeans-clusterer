@@ -2,6 +2,9 @@ require 'narray'
 
 class KMeansClusterer
 
+  # Euclidean distance function. Requires instances of NArray
+  DISTANCE = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
+
   class Point
     attr_reader :data
     attr_accessor :cluster, :label
@@ -70,21 +73,25 @@ class KMeansClusterer
     end
 
     def sorted_points
-      @points.sort_by {|point| distance_from_center(point) }
+      data = NArray.to_na @points.map(&:data)
+      distances = DISTANCE.call data, center.data
+      @points.sort_by.with_index {|c, i| distances[i] }
     end
 
     def sum_of_squares_error
       if @points.empty?
         0
       else
-        errors = @points.map {|point| distance_from_center(point) }
-        (NArray.to_na(errors)**2).sum
+        data = NArray.to_na @points.map(&:data)
+        distances = DISTANCE.call data, center.data
+        (distances**2).sum
       end
     end
 
     def dissimilarity point
-      distances = @points.map {|mypoint| mypoint.distance_from(point) }
-      distances.reduce(:+) / distances.length
+      data = NArray.to_na @points.map(&:data)
+      distances = DISTANCE.call data, point.data
+      distances.sum / distances.length.to_f
     end
 
     private
@@ -155,7 +162,7 @@ class KMeansClusterer
 
   def sorted_clusters point = origin
     centers = NArray.to_na @clusters.map {|c| c.center.data }
-    distances = NMath.sqrt ((centers - point.data)**2).sum(0) # euclidean distance calc in batch
+    distances = DISTANCE.call(centers, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
