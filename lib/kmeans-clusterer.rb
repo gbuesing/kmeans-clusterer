@@ -183,7 +183,7 @@ class KMeansClusterer
       @clusters = []
       pick = rand(@points.length)
       center = Point.new @points[pick].data.to_a
-      @clusters << Cluster.new(center)
+      @clusters << Cluster.new(center, 1)
 
       while @clusters.length < @k
         centers = NArray.to_na @clusters.map {|c| c.center.data }
@@ -199,7 +199,8 @@ class KMeansClusterer
         r = rand
         pick = cumprobs.to_a.index {|prob| r < prob }
         center = Point.new @points[pick].data.to_a
-        @clusters << Cluster.new(center)
+        cluster = Cluster.new(center, @clusters.length + 1)
+        @clusters << cluster
       end
     end
 
