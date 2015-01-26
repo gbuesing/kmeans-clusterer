@@ -173,14 +173,10 @@ class KMeansClusterer
 
   private
     def pick_k_random_points
-      indexes = pick_k_random_indexes
-      datas = indexes.map {|i| @points[i].data.to_a }
-      datas.map {|data| Point.new(data) }
+      pick_k_random_indexes.map {|i| Point.new @points[i].data.to_a }
     end
 
     def pick_k_random_indexes
-      indexes = @points.length.times.to_a
-      indexes.shuffle!
-      indexes.slice(0, @k)
+      @points.length.times.to_a.shuffle.slice(0, @k)
     end
 end
