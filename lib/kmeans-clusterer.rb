@@ -3,7 +3,8 @@ require 'narray'
 class KMeansClusterer
 
   # Euclidean distance function. Requires instances of NArray as args
-  EuclideanDistance = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
+  Distance = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
+  Center = -> (a) { a.mean(1) }
 
   class Point
     attr_reader :data
@@ -48,7 +49,7 @@ class KMeansClusterer
       else
         old_center = @center
         @center = calculate_center_from_points
-        EuclideanDistance.call @center.data, old_center.data
+        Distance.call @center.data, old_center.data
       end
     end
 
@@ -62,7 +63,7 @@ class KMeansClusterer
     end
 
     def sorted_points
-      distances = EuclideanDistance.call points_narray, center.data
+      distances = Distance.call points_narray, center.data
       @points.sort_by.with_index {|c, i| distances[i] }
     end
 
@@ -70,20 +71,20 @@ class KMeansClusterer
       if @points.empty?
         0
       else
-        distances = EuclideanDistance.call points_narray, center.data
+        distances = Distance.call points_narray, center.data
         (distances**2).sum
       end
     end
 
     def dissimilarity point
-      distances = EuclideanDistance.call points_narray, point.data
+      distances = Distance.call points_narray, point.data
       distances.sum / distances.length.to_f
     end
 
     private
       def calculate_center_from_points
-        mean = points_narray.mean(1)
-        Point.new(mean)
+        data = Center.call points_narray
+        Point.new data
       end
 
       def points_narray
@@ -126,7 +127,7 @@ class KMeansClusterer
       centers = get_cluster_centers
 
       @points.each do |point|
-        distances = EuclideanDistance.call(centers, point.data)
+        distances = Distance.call(centers, point.data)
         cluster = @clusters.sort_by.with_index {|c, i| distances[i] }.first
         cluster << point
       end
@@ -154,7 +155,7 @@ class KMeansClusterer
   def sorted_clusters point = origin
     point = Point.new(point) unless point.is_a?(Point)
     centers = get_cluster_centers
-    distances = EuclideanDistance.call(centers, point.data)
+    distances = Distance.call(centers, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
@@ -198,7 +199,7 @@ class KMeansClusterer
         centers = get_cluster_centers
 
         d2 = @points.map do |point|
-          dists = EuclideanDistance.call centers, point.data
+          dists = Distance.call centers, point.data
           dists.min**2 # closest cluster distance, squared
         end
 
@@ -235,4 +236,9 @@ class KMeansClusterer
     def get_cluster_centers
       NArray.to_na @clusters.map {|c| c.center.data }
     end
+end
+
+class KMediansClusterer < KMeansClusterer
+  Distance = -> (a, b) { (a - b).abs.sum(0) }
+  Center = -> (a) { a.rot90.median(0) }
 end

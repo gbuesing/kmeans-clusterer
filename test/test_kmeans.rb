@@ -26,6 +26,67 @@ class TestKMeansClusterer < MiniTest::Test
     assert_in_delta 0.873, kmeans.silhouette_score
   end
 
+  def test_distance_calculation
+    d = KMeansClusterer::Distance.call NArray[1,1], NArray[2,2]
+    assert_in_delta Math.sqrt(2), d
+  end
+
+  def test_distance_calculation_with_matrix
+    d = KMeansClusterer::Distance.call NArray[[1,1],[5,5]], NArray[2,2]
+    assert_in_delta Math.sqrt(2), d[0]
+    assert_in_delta Math.sqrt(18), d[1]
+  end
+
+  def test_center_calculation
+    c = KMeansClusterer::Center.call NArray[[1,1],[5,5],[4,6]]
+    assert_in_delta (1+5+4)/3.0, c[0]
+    assert_in_delta (1+5+6)/3.0, c[1]
+  end
+
+end
+
+class TestKMediansClusterer < MiniTest::Test
+
+  def test_clustering
+    data = [
+      [3, 3], [-3, 3], [3, -3], [-3, -3],
+      [3, 4], [-3, 4], [3, -4], [-3, -4],
+      [4, 3], [-4, 3], [4, -3], [-4, -3],
+      [4, 4], [-4, 4], [4, -4], [-4, -4],
+    ]
+
+    kmedians = KMediansClusterer.run 4, data
+    
+    kmedians.clusters.each do |cluster|
+      xs, ys = cluster.points.map {|p| p[0]}, cluster.points.map {|p| p[1]}
+      assert (xs.inject(1) {|m, v| m * v}) > 0 # i.e., ensure xs are all same sign
+      assert (ys.inject(1) {|m, v| m * v}) > 0 # i.e., ensure ys are all same sign
+    end
+  end
+
+  def test_distance_calculation
+    d = KMediansClusterer::Distance.call NArray[1,1].to_f, NArray[2,2].to_f
+    assert_equal 2, d
+  end
+
+  def test_distance_calculation_with_matrix
+    d = KMediansClusterer::Distance.call NArray[[1,1],[5,5]].to_f, NArray[2,2].to_f
+    assert_equal 2, d[0]
+    assert_equal 6, d[1]
+  end
+
+  def test_center_calculation_with_odd_count
+    c = KMediansClusterer::Center.call NArray[[1,1],[5,5],[4,6]].to_f
+    assert_equal 4, c[0]
+    assert_equal 5, c[1]
+  end
+
+  def test_center_calculation_with_even_count
+    c = KMediansClusterer::Center.call NArray[[1,1],[5,5],[4,6],[7,-2]].to_f
+    assert_equal 4.5, c[0]
+    assert_equal 3.0, c[1]
+  end
+
 end
 
 
