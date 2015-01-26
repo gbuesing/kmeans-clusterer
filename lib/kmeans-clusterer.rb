@@ -93,6 +93,7 @@ class KMeansClusterer
 
 
   def self.run k, data, opts = {}
+    raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
     data = data.map {|instance| NArray.to_na(instance) } # eagerly cast to NArray to reduce copies
     runcount = opts[:runs] || 10
     runs = runcount.times.map { new(k, data, opts).run }
@@ -104,8 +105,6 @@ class KMeansClusterer
 
 
   def initialize k, data, opts = {}
-    raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
-
     @k = k
     @init = opts[:init] || :kmpp
     labels = opts[:labels] || []
