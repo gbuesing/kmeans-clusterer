@@ -9,8 +9,9 @@ class KMeansClusterer
     attr_reader :data
     attr_accessor :cluster, :label
 
-    def initialize data
+    def initialize data, label = nil
       @data = NArray.to_na data
+      @label = label
     end
 
     def [] index
@@ -35,8 +36,9 @@ class KMeansClusterer
     attr_reader :center, :points
     attr_accessor :label
 
-    def initialize center
+    def initialize center, label = nil
       @center = center
+      @label = label
       @points = []
     end
 
@@ -94,7 +96,7 @@ class KMeansClusterer
     data = data.map {|instance| NArray.to_na(instance) } # eagerly cast to NArray to reduce copies
     runcount = opts[:runs] || 8
     runs = runcount.times.map { new(k, data, opts).run }
-    runs.sort_by {|run| run.sum_of_squares_error }.first
+    runs.sort_by(&:sum_of_squares_error).first
   end
 
 
@@ -108,7 +110,7 @@ class KMeansClusterer
     labels = opts[:labels] || []
 
     @points = data.map.with_index do |instance, i|
-      Point.new(instance).tap {|p| p.label = labels[i] }
+      Point.new instance, labels[i]
     end
 
     @iterations, @runtime = 0, 0
@@ -117,8 +119,8 @@ class KMeansClusterer
   def run 
     start_time = Time.now
 
-    @clusters = pick_k_random_points.map {|point| Cluster.new(point) }
-    @clusters.each_with_index {|cluster, i| cluster.label = i + 1 } # tag clusters as 1..k
+    centerpoints = pick_k_random_points
+    @clusters = centerpoints.map.with_index {|center, i| Cluster.new center, i+1 }
 
     loop do
       @iterations +=1
