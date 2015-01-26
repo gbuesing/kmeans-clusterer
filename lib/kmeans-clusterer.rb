@@ -94,7 +94,7 @@ class KMeansClusterer
 
   def self.run k, data, opts = {}
     data = data.map {|instance| NArray.to_na(instance) } # eagerly cast to NArray to reduce copies
-    runcount = opts[:runs] || 8
+    runcount = opts[:runs] || 10
     runs = runcount.times.map { new(k, data, opts).run }
     runs.sort_by(&:sum_of_squares_error).first
   end

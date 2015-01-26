@@ -21,7 +21,7 @@ k = 2 # find 2 clusters in data
 
 # Options:
 #   labels: array of Ruby objects to collate with data array
-#   runs: number of times to run kmeans (default is 8)
+#   runs: number of times to run kmeans (default is 10)
 result = KMeansClusterer.run k, data, labels: labels, runs: 3
 
 result.clusters.each do |cluster|
