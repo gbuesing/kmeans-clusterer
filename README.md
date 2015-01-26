@@ -22,14 +22,14 @@ k = 2 # find 2 clusters in data
 # Options:
 #   labels: array of Ruby objects to collate with data array
 #   runs: number of times to run kmeans (default is 10)
-result = KMeansClusterer.run k, data, labels: labels, runs: 3
+kmeans = KMeansClusterer.run k, data, labels: labels, runs: 3
 
-result.clusters.each do |cluster|
+kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + 
         cluster.points.map(&:label).join(", ")
 end
 
-puts "\nSilhouette score: #{result.silhouette_score.round(2)}"
+puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
 
 # Outputs:
 #
