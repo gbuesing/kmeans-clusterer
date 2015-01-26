@@ -2,8 +2,8 @@ require 'narray'
 
 class KMeansClusterer
 
-  # Euclidean distance function. Requires instances of NArray
-  DISTANCE = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
+  # Euclidean distance function. Requires instances of NArray as args
+  EuclideanDistance = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
 
   class Point
     attr_reader :data
@@ -28,15 +28,6 @@ class KMeansClusterer
     def dimension
       @data.length
     end
-
-    def distance_from point
-      euclidean_distance @data, point.data
-    end
-
-    private
-      def euclidean_distance vec1, vec2
-        Math.sqrt ((vec1 - vec2)**2).sum
-      end
   end
 
 
@@ -55,7 +46,7 @@ class KMeansClusterer
       else
         old_center = @center
         @center = calculate_center_from_points
-        distance_from_center old_center
+        EuclideanDistance.call @center.data, old_center.data
       end
     end
 
@@ -68,13 +59,8 @@ class KMeansClusterer
       @points = []
     end
 
-    def distance_from_center point
-      @center.distance_from point
-    end
-
     def sorted_points
-      data = NArray.to_na @points.map(&:data)
-      distances = DISTANCE.call data, center.data
+      distances = EuclideanDistance.call points_narray, center.data
       @points.sort_by.with_index {|c, i| distances[i] }
     end
 
@@ -82,22 +68,24 @@ class KMeansClusterer
       if @points.empty?
         0
       else
-        data = NArray.to_na @points.map(&:data)
-        distances = DISTANCE.call data, center.data
+        distances = EuclideanDistance.call points_narray, center.data
         (distances**2).sum
       end
     end
 
     def dissimilarity point
-      data = NArray.to_na @points.map(&:data)
-      distances = DISTANCE.call data, point.data
+      distances = EuclideanDistance.call points_narray, point.data
       distances.sum / distances.length.to_f
     end
 
     private
       def calculate_center_from_points
-        mean = NArray.to_na(@points.map(&:data)).mean(1)
+        mean = points_narray.mean(1)
         Point.new(mean)
+      end
+
+      def points_narray
+        NArray.to_na @points.map(&:data)
       end
   end
 
@@ -162,7 +150,7 @@ class KMeansClusterer
 
   def sorted_clusters point = origin
     centers = NArray.to_na @clusters.map {|c| c.center.data }
-    distances = DISTANCE.call(centers, point.data)
+    distances = EuclideanDistance.call(centers, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 

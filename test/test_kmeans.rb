@@ -29,17 +29,6 @@ class TestKMeansClusterer < MiniTest::Test
 end
 
 
-class TestPoint < MiniTest::Test
-
-  def test_distance_from
-    p1 = KMeansClusterer::Point.new [1,2]
-    p2 = KMeansClusterer::Point.new [6, 5]
-    assert_in_delta 5.83, p1.distance_from(p2)
-  end
-
-end
-
-
 class TestCluster < MiniTest::Test
 
   def test_recenter
