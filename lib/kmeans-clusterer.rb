@@ -129,8 +129,11 @@ class KMeansClusterer
     loop do
       @iterations +=1
 
+      centers = NArray.to_na @clusters.map {|c| c.center.data }
+
       @points.each do |point|
-        cluster = closest_cluster(point)
+        distances = EuclideanDistance.call(centers, point.data)
+        cluster = @clusters.sort_by.with_index {|c, i| distances[i] }.first
         cluster << point
       end
 
