@@ -107,6 +107,7 @@ class KMeansClusterer
     raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
 
     @k = k
+    @init = opts[:init] || :kmpp
     labels = opts[:labels] || []
 
     @points = data.map.with_index do |instance, i|
@@ -119,8 +120,11 @@ class KMeansClusterer
   def run 
     start_time = Time.now
 
-    centerpoints = pick_k_random_points
-    @clusters = centerpoints.map.with_index {|center, i| Cluster.new center, i+1 }
+    if @init == :kmpp
+      kmpp_cluster_init
+    else
+      random_cluster_init
+    end
 
     loop do
       @iterations +=1
@@ -174,6 +178,35 @@ class KMeansClusterer
   end
 
   private
+    # k-means++
+    def kmpp_cluster_init
+      @clusters = []
+      pick = rand(@points.length)
+      center = Point.new @points[pick].data.to_a
+      @clusters << Cluster.new(center)
+
+      while @clusters.length < @k
+        centers = NArray.to_na @clusters.map {|c| c.center.data }
+
+        d2 = @points.map do |point|
+          dists = EuclideanDistance.call centers, point.data
+          dists.min**2 # closest cluster distance, squared
+        end
+
+        d2 = NArray.to_na d2
+        probs = d2 / d2.sum
+        cumprobs = probs.cumsum
+        r = rand
+        pick = cumprobs.to_a.index {|prob| r < prob }
+        center = Point.new @points[pick].data.to_a
+        @clusters << Cluster.new(center)
+      end
+    end
+
+    def random_cluster_init
+      @clusters = pick_k_random_points.map.with_index {|center, i| Cluster.new center, i+1 }
+    end
+
     def pick_k_random_points
       pick_k_random_indexes.map {|i| Point.new @points[i].data.to_a }
     end
