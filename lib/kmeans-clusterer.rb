@@ -95,10 +95,27 @@ class KMeansClusterer
 
   def self.run k, data, opts = {}
     raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
-    data = data.map {|instance| NArray.to_na(instance).to_f } # eagerly cast to NArray to reduce copies
+
+    data = if opts[:scale_data]
+      scale_data data
+    else
+      data.map {|row| NArray.to_na(row).to_f}
+    end
+
     runcount = opts[:runs] || 10
     runs = runcount.times.map { new(k, data, opts).run }
     runs.sort_by(&:sum_of_squares_error).first
+  end
+
+  # see scikit-learn scale and _mean_and_std methods
+  def self.scale_data data
+    nadata = NArray.to_na(data).to_f
+    mean = nadata.mean(1)
+    std = nadata.rmsdev(1)
+    std[std.eq(0)] = 1.0 # so we don't divide by 0
+    nadata = (nadata - mean) / std
+    # convert back to an array, containing NArrays for each row
+    data.length.times.map {|i| nadata[true, i] }
   end
 
 
@@ -208,6 +225,7 @@ class KMeansClusterer
         cumprobs = probs.cumsum
         r = rand
         pick = cumprobs.to_a.index {|prob| r < prob }
+        # pick = (cumprobs >= r).where[0]
         centroid = Point.new @points[pick].data.to_a
         cluster = Cluster.new(centroid, @clusters.length + 1)
         @clusters << cluster

@@ -43,6 +43,24 @@ class TestKMeansClusterer < MiniTest::Test
     assert_in_delta (1+5+6)/3.0, c[1]
   end
 
+  def test_scale_data
+    input = [
+      [1,5,10],
+      [10,5,205]
+    ]
+
+    actual = KMeansClusterer.scale_data input
+
+    expected = [
+      [ -1.0, 0.0, -1.0 ],
+      [ 1.0, 0.0, 1.0 ]
+    ]
+
+    assert_equal expected.length, actual.length
+    assert_equal expected[0], actual[0].to_a
+    assert_equal expected[1], actual[1].to_a
+  end
+
 end
 
 class TestKMediansClusterer < MiniTest::Test
