@@ -9,7 +9,7 @@ k = (ARGV[0] || 20).to_i
 runs = (ARGV[1] || 10).to_i
 
 data, labels = [], []
-CSV.foreach("examples/us_cities.csv") do |row|
+CSV.foreach("examples/data/us_cities.csv") do |row|
   data << [row[2].to_f, row[3].to_f]
   labels << "#{row[1]} #{row[0]}"
 end
