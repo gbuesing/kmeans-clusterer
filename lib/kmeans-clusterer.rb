@@ -234,7 +234,7 @@ class KMeansClusterer
 
     def custom_cluster_init
       @clusters = @init.map.with_index do |instance, i|
-        point = Point.new instance
+        point = Point.new NArray.to_na(instance).to_f
         Cluster.new point, i+1
       end
     end

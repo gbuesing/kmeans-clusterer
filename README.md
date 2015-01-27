@@ -7,6 +7,7 @@ Features:
 - Runs multiple clustering attempts to find optimal solution (single runs are susceptible to falling into non-optimal local minima)
 - Initializes centroids via [k-means++](http://en.wikipedia.org/wiki/K-means%2B%2B) algorithm, for faster convergence
 - Calculates [silhouette](http://en.wikipedia.org/wiki/Silhouette_%28clustering%29) score for evaluation
+- Option to scale data before clustering, so that output isn't biased by different feature scales
 
 
 Usage
@@ -23,10 +24,11 @@ labels = ['New York', 'Los Angeles', 'Baltimore',
 k = 2 # find 2 clusters in data
 
 # Options:
-#   labels: array of Ruby objects to collate with data array
+#   labels: optional array of Ruby objects to collate with data array
 #   runs: number of times to run kmeans (default is 10)
 #   init: algorithm for picking initial cluster centroids, 
 #         :kmpp (k-means++, default) or :random
+#   scale_data: true or false (default is false.) Scales features to -1..1 range
 kmeans = KMeansClusterer.run k, data, labels: labels, runs: 10
 
 kmeans.clusters.each do |cluster|
