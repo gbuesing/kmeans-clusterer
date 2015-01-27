@@ -224,8 +224,8 @@ class KMeansClusterer
         probs = d2 / d2.sum
         cumprobs = probs.cumsum
         r = rand
-        pick = cumprobs.to_a.index {|prob| r < prob }
-        # pick = (cumprobs >= r).where[0]
+        # pick = cumprobs.to_a.index {|prob| r < prob }
+        pick = (cumprobs >= r).where[0]
         centroid = Point.new @points[pick].data.to_a
         cluster = Cluster.new(centroid, @clusters.length + 1)
         @clusters << cluster
