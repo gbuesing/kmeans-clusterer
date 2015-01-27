@@ -38,7 +38,7 @@ class TestKMeansClusterer < MiniTest::Test
   end
 
   def test_centroid_calculation
-    c = KMeansClusterer::Centroid.call NArray[[1,1],[5,5],[4,6]]
+    c = KMeansClusterer::CalculateCentroid.call NArray[[1,1],[5,5],[4,6]]
     assert_in_delta (1+5+4)/3.0, c[0]
     assert_in_delta (1+5+6)/3.0, c[1]
   end
@@ -94,13 +94,13 @@ class TestKMediansClusterer < MiniTest::Test
   end
 
   def test_centroid_calculation_with_odd_count
-    c = KMediansClusterer::Centroid.call NArray[[1,1],[5,5],[4,6]].to_f
+    c = KMediansClusterer::CalculateCentroid.call NArray[[1,1],[5,5],[4,6]].to_f
     assert_equal 4, c[0]
     assert_equal 5, c[1]
   end
 
   def test_centroid_calculation_with_even_count
-    c = KMediansClusterer::Centroid.call NArray[[1,1],[5,5],[4,6],[7,-2]].to_f
+    c = KMediansClusterer::CalculateCentroid.call NArray[[1,1],[5,5],[4,6],[7,-2]].to_f
     assert_equal 4.5, c[0]
     assert_equal 3.0, c[1]
   end

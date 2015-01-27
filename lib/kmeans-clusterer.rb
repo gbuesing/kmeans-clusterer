@@ -4,7 +4,7 @@ class KMeansClusterer
 
   # Euclidean distance function. Requires instances of NArray as args
   Distance = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
-  Centroid = -> (a) { a.mean(1) }
+  CalculateCentroid = -> (a) { a.mean(1) }
 
   class Point
     attr_reader :data
@@ -83,7 +83,7 @@ class KMeansClusterer
 
     private
       def calculate_centroid_from_points
-        data = Centroid.call points_narray
+        data = CalculateCentroid.call points_narray
         Point.new data
       end
 
@@ -258,5 +258,5 @@ end
 
 class KMediansClusterer < KMeansClusterer
   Distance = -> (a, b) { (a - b).abs.sum(0) }
-  Centroid = -> (a) { a.rot90.median(0) }
+  CalculateCentroid = -> (a) { a.rot90.median(0) }
 end
