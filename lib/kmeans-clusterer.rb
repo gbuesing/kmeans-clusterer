@@ -103,8 +103,19 @@ class KMeansClusterer
     end
 
     runcount = opts[:runs] || 10
-    runs = runcount.times.map { new(k, data, opts).run }
-    runs.sort_by(&:sum_of_squares_error).first
+    errors = []
+
+    runs = runcount.times.map do |i|
+      km = new(k, data, opts).run
+      error = km.sum_of_squares_error
+      if opts[:log]
+        puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{error.round(2)} err"
+      end
+      errors << error
+      km
+    end
+
+    runs.sort_by.with_index {|run, i| errors[i] }.first
   end
 
   # see scikit-learn scale and _mean_and_std methods
