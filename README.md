@@ -55,6 +55,8 @@ Silhouette score: 0.91
 
 The following options can be passed in to ```KMeansClusterer.run```:
 
+option | description
+------ | -----------
 labels | optional array of Ruby objects to collate with data array
 runs   | number of times to run kmeans (default is 10)
 log    | true or false (default is false.) Show output after each run
