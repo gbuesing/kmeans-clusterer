@@ -31,4 +31,4 @@ Example PNG output for k=10:
 
 Example with k=25:
 
-![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k25.png)
+![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k20.png)
