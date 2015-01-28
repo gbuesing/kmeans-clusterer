@@ -102,7 +102,7 @@ predictions_images.each.with_index do |images, gridrow|
   end
 end
 
-image_path = "examples/data/mnist/mnist_#{train_size}_#{runs}.png"
+image_path = "examples/data/output/mnist_#{train_size}_#{runs}.png"
 puts "\nSaving png to #{image_path}"
 @png.save image_path, :compression => Zlib::NO_COMPRESSION
 

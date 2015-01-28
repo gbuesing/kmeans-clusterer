@@ -5,14 +5,16 @@ KMeansClusterer Examples
 US Cities
 ---
 
-This example clusters US cities based on lat/lng and outputs the clusters to the terminal.
+This example clusters US cities based on lat/lng and outputs the clusters to the terminal and to a PNG (requires GNUPlot.)
 
 The number of clusters can be configured on the command line:
 
-```./examples/cities.rb '12'```
+```./examples/cities.rb '10' # k=10```
+
+![Cities clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/cities_k10.png)
 
 
-MNIST
+MNIST Handwritten Digits
 ---
 
 This example clusters handwritten digits from the [MNIST database of handwritten digits](http://yann.lecun.com/exdb/mnist/).
