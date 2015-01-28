@@ -31,7 +31,7 @@ test_data, test_labels = data.slice(train_size, test_size), labels.slice(train_s
 puts "Clustering #{train_size} images:"
 
 t = Time.now
-kmeans = KMeansClusterer.run(10, train_data, labels: train_labels, runs: runs, scale_data: true, log: true)
+kmeans = KMeansClusterer.run(10, train_data, labels: train_labels, runs: runs, log: true)
 elapsed = Time.now - t
 
 # kmeans.clusters.each do |cluster|
@@ -43,7 +43,7 @@ puts "\nBest of #{runs} runs (total time #{elapsed.round(2)}s):"
 puts "10 clusters in #{kmeans.iterations} iterations, #{kmeans.runtime.round(2)}s"
 # puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
 
-puts "\nUsing kmeans to cluster #{test_size} new samples from test set:"
+puts "\nUsing kmeans to cluster #{test_size} samples from test set:\n\n"
 
 # console output: show lables
 
@@ -56,7 +56,7 @@ test_data.each.with_index do |row, i|
 end
 
 predictions_labels.each do |vals|
-  puts "\n#---\n\n"
+  # puts "\n#---\n\n"
   puts vals.join(' ')
 end
 
