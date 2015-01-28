@@ -25,10 +25,6 @@ To run this example:
 
 After running k-means, a test set of digits will be classified (by finding the closest cluster) and outputted to a PNG with each cluster represented as a row.
 
-Example PNG output for k=10:
-
-![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k10.png)
-
-Example with k=20:
+Example PNG output with k=20:
 
 ![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k20.png)
