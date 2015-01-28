@@ -24,14 +24,7 @@ labels = ['New York', 'Los Angeles', 'Baltimore',
 
 k = 2 # find 2 clusters in data
 
-# Options:
-#   labels: optional array of Ruby objects to collate with data array
-#   runs: number of times to run kmeans (default is 10)
-#   log: true or false (default is false.) Show output after each run
-#   init: algorithm for picking initial cluster centroids, 
-#         :kmpp (k-means++, default) or :random
-#   scale_data: true or false (default is false.) Scales features to -1..1 range
-kmeans = KMeansClusterer.run k, data, labels: labels, runs: 10
+kmeans = KMeansClusterer.run k, data, labels: labels, runs: 5
 
 kmeans.clusters.each do |cluster|
   puts  cluster.label.to_s + '. ' + 
@@ -58,6 +51,16 @@ Closest cluster to Chicago: 1
 Silhouette score: 0.91
 ```
 
+### Options
+
+The following options can be passed in to ```KMeansClusterer.run```:
+
+labels | optional array of Ruby objects to collate with data array
+runs   | number of times to run kmeans (default is 10)
+log    | true or false (default is false.) Show output after each run
+init   | algorithm for picking initial cluster centroids, kmpp (k-means++, default) or :random
+scale_data | true or false (default is false.) Scales features to -1..1 range
+
 ### k-medians
 
 k-medians clustering is available via ```KMediansClusterer```, which has the same api
@@ -65,7 +68,7 @@ as ```KMeansClusterer```:
 
 ```ruby
 # same api as KMeansClusterer
-kmedians = KMediansClusterer.run k, data, labels: labels, runs: 10
+kmedians = KMediansClusterer.run k, data, labels: labels, runs: 5
 ```
 
 k-medians uses the Manhattan distance measure instead of Euclidean distance,
