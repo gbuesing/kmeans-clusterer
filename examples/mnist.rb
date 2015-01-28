@@ -6,12 +6,16 @@ require_relative '../lib/kmeans-clusterer'
 require_relative './utils/mnist_loader'
 require 'narray'
 require 'chunky_png'
-require 'csv'
 
-train_size = (ARGV[0] || 5000).to_i
-runs = (ARGV[1] || 1).to_i
 
-test_size = 200
+
+k = (ARGV[0] || 10).to_i
+train_size = 5000
+test_size = (ARGV[1] || 200).to_i
+
+runs = 1 # not much seems to be gained by multiple runs for this example
+
+
 
 orig_data, labels = MnistLoader.training_set.get_data_and_labels(train_size + test_size)
 
@@ -31,7 +35,7 @@ test_data, test_labels = data.slice(train_size, test_size), labels.slice(train_s
 puts "Clustering #{train_size} images:"
 
 t = Time.now
-kmeans = KMeansClusterer.run(10, train_data, labels: train_labels, runs: runs, log: true)
+kmeans = KMeansClusterer.run(k, train_data, labels: train_labels, runs: runs, log: true)
 elapsed = Time.now - t
 
 # kmeans.clusters.each do |cluster|
@@ -47,7 +51,7 @@ puts "\nUsing kmeans to cluster #{test_size} samples from test set:\n\n"
 
 # console output: show lables
 
-predictions_labels = Array.new(10) { [] }
+predictions_labels = Array.new(k) { [] }
 
 test_data.each.with_index do |row, i|
   label = test_labels[i]
@@ -63,7 +67,7 @@ end
 
 # png output: show actual images
 
-predictions_images = Array.new(10) { [] }
+predictions_images = Array.new(k) { [] }
 
 orig_test = orig_data.slice(train_size, test_size)
 
@@ -74,7 +78,7 @@ end
 
 image_size = 28
 max_per_row = 25
-gridrows, gridcols = 10, 25
+gridrows, gridcols = k, 25
 
 @png = ChunkyPNG::Image.new(gridcols * image_size, gridrows * image_size, ChunkyPNG::Color::TRANSPARENT)
 
