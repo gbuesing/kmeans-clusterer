@@ -55,25 +55,24 @@ Silhouette score: 0.91
 
 The following options can be passed in to ```KMeansClusterer.run```:
 
-option | description
------- | -----------
-labels | optional array of Ruby objects to collate with data array
-runs   | number of times to run kmeans (default is 10)
-log    | true or false (default is false.) Show output after each run
-init   | algorithm for picking initial cluster centroids, kmpp (k-means++, default) or :random
-scale_data | true or false (default is false.) Scales features to -1..1 range
+option | default | description
+------ | ------- | -----------
+labels | nil | optional array of Ruby objects to collate with data array
+runs   | 10 | number of times to run kmeans
+log    | false | Print stats after each run
+init   | :kmpp | algorithm for picking initial cluster centroids. Accepts :kmpp, :random, or an array of k centroids
+scale_data | false | Scales features to -1..1 range
 
-### k-medians
+### KMediansClusterer
 
 k-medians clustering is available via ```KMediansClusterer```, which has the same api
 as ```KMeansClusterer```:
 
 ```ruby
-# same api as KMeansClusterer
 kmedians = KMediansClusterer.run k, data, labels: labels, runs: 5
 ```
 
-k-medians uses the Manhattan distance measure instead of Euclidean distance,
+```KMediansClusterer``` uses the Manhattan distance measure instead of Euclidean distance,
 and calculates centroids via the median of points instead of the mean.
 
 ### More examples
