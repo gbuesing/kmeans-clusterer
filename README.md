@@ -12,6 +12,7 @@ KMeansClusterer
 
 Usage
 ---
+
 Simple example:
 
 ```ruby
@@ -44,16 +45,20 @@ puts "\nClosest cluster to Chicago: #{cluster.label}"
 
 # Clustering quality score. Value between -1.0..1.0 (1.0 is best)
 puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
-
-# Outputs:
-#
-# 1. New York, Baltimore, Washington DC [39.63, -75.89]
-# 2. Los Angeles, Portland, Las Vegas [38.56, -118.7]
-#
-# Closest cluster to Chicago: 1
-#
-# Silhouette score: 0.91
 ```
+
+Output of simple example:
+
+```
+1. New York, Baltimore, Washington DC [39.63, -75.89]
+2. Los Angeles, Portland, Las Vegas [38.56, -118.7]
+
+Closest cluster to Chicago: 1
+
+Silhouette score: 0.91
+```
+
+### k-medians
 
 k-medians clustering is available via ```KMediansClusterer```, which has the same api
 as ```KMeansClusterer```:
@@ -65,6 +70,10 @@ kmedians = KMediansClusterer.run k, data, labels: labels, runs: 10
 
 k-medians uses the Manhattan distance measure instead of Euclidean distance,
 and calculates centroids via the median of points instead of the mean.
+
+### More examples
+
+More usage examples are available in the [examples](examples/) directory.
 
 
 License
