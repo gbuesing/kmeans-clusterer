@@ -29,6 +29,6 @@ Example PNG output for k=10:
 
 ![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k10.png)
 
-Example with k=25:
+Example with k=20:
 
 ![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k20.png)
