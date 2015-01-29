@@ -14,6 +14,30 @@ The number of clusters can be configured on the command line:
 ![Cities clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/cities_k10.png)
 
 
+Pick Best Value for k
+---
+
+This example shows how to pick the best value for k using both the elbow method and the silhouette method.
+
+```./examples/pick_k.rb``` # requires GNUPlot
+
+Initial setup of points, with 4 fairly well-defined clusters:
+
+![unclustered points](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/unclustered.png)
+
+Elbow method - find the point of diminishing returns:
+
+![chart of elbow for k](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/elbow.png)
+
+Silhouette method - pick k with the highest silhouette score
+
+![chart of silhouette for k](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/silhouette.png)
+
+Points plotted with best k value of 4:
+
+![plot of points with best k](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/best_k.png)
+
+
 MNIST Handwritten Digits
 ---
 

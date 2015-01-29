@@ -3,6 +3,12 @@ KMeansClusterer
 
 [k-means](http://en.wikipedia.org/wiki/K-means_clustering) and [k-medians](http://en.wikipedia.org/wiki/K-medians_clustering) clustering in Ruby. Uses [NArray](https://github.com/masa16/narray) under the hood for fast calculations.
 
+Jump to the [examples](examples/) directory to see this in action.
+
+
+Features
+---
+
 - Runs multiple clustering attempts to find optimal solution (single runs are susceptible to falling into non-optimal local minima)
 - Initializes centroids via [k-means++](http://en.wikipedia.org/wiki/K-means%2B%2B) algorithm, for faster convergence
 - Calculates [silhouette](http://en.wikipedia.org/wiki/Silhouette_%28clustering%29) score for evaluation
