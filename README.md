@@ -57,11 +57,11 @@ The following options can be passed in to ```KMeansClusterer.run```:
 
 option | default | description
 ------ | ------- | -----------
-labels | nil | optional array of Ruby objects to collate with data array
-runs   | 10 | number of times to run kmeans
-log    | false | Print stats after each run
-init   | :kmpp | algorithm for picking initial cluster centroids. Accepts :kmpp, :random, or an array of k centroids
-scale_data | false | Scales features to -1..1 range
+:labels | nil | optional array of Ruby objects to collate with data array
+:runs   | 10 | number of times to run kmeans
+:log    | false | Print stats after each run
+:init   | :kmpp | algorithm for picking initial cluster centroids. Accepts :kmpp, :random, or an array of k centroids
+:scale_data | false | Scales features to -1..1 range
 
 ### KMediansClusterer
 
@@ -72,8 +72,15 @@ as ```KMeansClusterer```:
 kmedians = KMediansClusterer.run k, data, labels: labels, runs: 5
 ```
 
-```KMediansClusterer``` uses the Manhattan distance measure instead of Euclidean distance,
-and calculates centroids via the median of points instead of the mean.
+Differences between the two variants:
+
+  | KMeansClusterer | KMediansClusterer
+- | --------------- | -----------------
+distance measure | Euclidean | Manhattan
+centroid calculation | mean | median
+cost function | sum of squared distances | sum of distances
+
+
 
 ### More examples
 

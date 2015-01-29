@@ -22,7 +22,7 @@ class TestKMeansClusterer < MiniTest::Test
       assert (ys.inject(1) {|m, v| m * v}) > 0 # i.e., ensure ys are all same sign
     end
 
-    assert_in_delta 8.0, kmeans.sum_of_squares_error
+    assert_in_delta 8.0, kmeans.error
     assert_in_delta 0.873, kmeans.silhouette_score
   end
 
@@ -80,6 +80,9 @@ class TestKMediansClusterer < MiniTest::Test
       assert (xs.inject(1) {|m, v| m * v}) > 0 # i.e., ensure xs are all same sign
       assert (ys.inject(1) {|m, v| m * v}) > 0 # i.e., ensure ys are all same sign
     end
+
+    assert_in_delta 11.314, kmedians.error
+    assert_in_delta 0.873, kmedians.silhouette_score
   end
 
   def test_distance_calculation

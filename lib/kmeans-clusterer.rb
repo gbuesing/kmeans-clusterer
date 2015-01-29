@@ -76,6 +76,11 @@ class KMeansClusterer
       end
     end
 
+    def sum_of_distances
+      return 0 if @points.empty?
+      Distance.call(points_narray, centroid.data).sum
+    end
+
     def dissimilarity point
       distances = Distance.call points_narray, point.data
       distances.sum / distances.length.to_f
@@ -107,7 +112,7 @@ class KMeansClusterer
 
     runs = runcount.times.map do |i|
       km = new(k, data, opts).run
-      error = km.sum_of_squares_error
+      error = km.error
       if opts[:log]
         puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{error.round(2)} err"
       end
@@ -172,7 +177,7 @@ class KMeansClusterer
     self
   end
 
-  def sum_of_squares_error
+  def error
     @clusters.map(&:sum_of_squares_error).reduce(:+)
   end
 
@@ -270,4 +275,8 @@ end
 class KMediansClusterer < KMeansClusterer
   Distance = -> (a, b) { (a - b).abs.sum(0) }
   CalculateCentroid = -> (a) { a.rot90.median(0) }
+
+  def error
+    @clusters.map(&:sum_of_distances).reduce(:+)
+  end
 end

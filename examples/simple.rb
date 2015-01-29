@@ -21,7 +21,7 @@ kmeans.clusters.each do |cluster|
         cluster.points.join(", ")
 end
 
-puts "\nSSE: #{kmeans.sum_of_squares_error.round(2)}"
+puts "\nSSE: #{kmeans.error.round(2)}"
 puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
 
 puts "\n---\n"
@@ -35,7 +35,7 @@ kmedians.clusters.each do |cluster|
         cluster.points.join(", ")
 end
 
-puts "\nSSE: #{kmedians.sum_of_squares_error.round(2)}"
+puts "\nSSE: #{kmedians.error.round(2)}"
 puts "Silhouette score: #{kmedians.silhouette_score.round(2)}"
 
 # Outputs:
@@ -66,7 +66,7 @@ end
 cluster = kmeans.closest_cluster [41.85,-87.65] # Chicago
 puts "\nClosest cluster to Chicago: #{cluster.label}"
 
-puts "\nSSE: #{kmeans.sum_of_squares_error.round(2)}"
+puts "\nSSE: #{kmeans.error.round(2)}"
 puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
 
 
