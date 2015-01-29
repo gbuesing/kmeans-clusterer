@@ -74,8 +74,8 @@ kmedians = KMediansClusterer.run k, data, labels: labels, runs: 5
 
 Differences between the two variants:
 
-attribute | KMeansClusterer | KMediansClusterer
-- | --------------- | -----------------
+          | KMeansClusterer | KMediansClusterer
+--------- | --------------- | -----------------
 distance measure | Euclidean | Manhattan
 centroid calculation | mean | median
 cost function | sum of squared distances | sum of distances
