@@ -16,12 +16,19 @@ Features
 - Works with high-dimensional data
 
 
+Install
+---
+```gem install kmeans-clusterer```
+
+
 Usage
 ---
 
 Simple example:
 
 ```ruby
+require 'kmeans-clusterer'
+
 data = [[40.71,-74.01],[34.05,-118.24],[39.29,-76.61],
         [45.52,-122.68],[38.9,-77.04],[36.11,-115.17]]
 
@@ -85,14 +92,3 @@ Differences between the two variants:
 distance measure | Euclidean | Manhattan
 centroid calculation | mean | median
 cost function | sum of squared distances | sum of distances
-
-
-
-### More examples
-
-More usage examples are available in the [examples](examples/) directory.
-
-
-License
----
-MIT
