@@ -9,7 +9,7 @@ This example clusters US cities based on lat/lng and outputs the clusters to the
 
 The number of clusters can be configured on the command line:
 
-```./examples/cities.rb '10' # k=10```
+```./examples/cities.rb -k 10```
 
 ![Cities clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/cities_k10.png)
 
@@ -23,7 +23,7 @@ To run this example:
 
 1. download the MNIST [training set images](http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz) and [training set labels](http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz) and place them in ```examples/data/mnist/```
 
-2. run ```./examples/mnist.rb '10' # k=10```
+2. run ```./examples/mnist.rb -k 10```
 
 After running k-means, a test set of digits will be classified (by finding the closest cluster) and outputted to a PNG with each cluster represented as a row.
 

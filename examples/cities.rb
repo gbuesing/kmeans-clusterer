@@ -4,10 +4,14 @@ require 'rubygems'
 require 'bundler/setup'
 require_relative '../lib/kmeans-clusterer'
 require 'csv'
+require 'optparse'
 
+k = 10
+runs = 10
 
-k = (ARGV[0] || 10).to_i
-runs = (ARGV[1] || 10).to_i
+OptionParser.new do |opts|
+  opts.on("-kK") {|v| k = v.to_i }
+end.parse!
 
 cities = CSV.foreach("examples/data/us_cities.csv").map do |row|
   { name: row[0], state: row[1], lat: row[2].to_f, lng: row[3].to_f }

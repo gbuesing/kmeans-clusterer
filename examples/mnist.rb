@@ -6,16 +6,18 @@ require_relative '../lib/kmeans-clusterer'
 require_relative './utils/mnist_loader'
 require 'narray'
 require 'chunky_png'
+require 'optparse'
 
 
-
-k = (ARGV[0] || 10).to_i
+k = 10
 train_size = 5000
-test_size = (ARGV[1] || 200).to_i
-
+test_size = 200
 runs = 1 # not much seems to be gained by multiple runs for this example
 
-
+OptionParser.new do |opts|
+  opts.on("-kK") {|v| k = v.to_i }
+  opts.on("-nN") {|v| train_size = v.to_i }
+end.parse!
 
 orig_data, labels = MnistLoader.training_set.get_data_and_labels(train_size + test_size)
 
