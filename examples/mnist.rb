@@ -5,7 +5,6 @@ require 'bundler/setup'
 require_relative '../lib/kmeans-clusterer'
 require_relative './utils/mnist_loader'
 require 'narray'
-require 'chunky_png'
 require 'optparse'
 
 
@@ -13,10 +12,12 @@ k = 10
 train_size = 5000
 test_size = 200
 runs = 1 # not much seems to be gained by multiple runs for this example
+skip_plot = false
 
 OptionParser.new do |opts|
   opts.on("-kK") {|v| k = v.to_i }
   opts.on("-nN") {|v| train_size = v.to_i }
+  opts.on("--skip-plot") {|v| skip_plot = true }
 end.parse!
 
 orig_data, labels = MnistLoader.training_set.get_data_and_labels(train_size + test_size)
@@ -78,35 +79,39 @@ test_data.each.with_index do |row, i|
   predictions_images[cluster.label - 1] << orig_test[i]
 end
 
-image_size = 28
-max_per_row = 25
-gridrows, gridcols = k, 25
 
-@png = ChunkyPNG::Image.new(gridcols * image_size, gridrows * image_size, ChunkyPNG::Color::TRANSPARENT)
+unless skip_plot
+  require 'chunky_png'
 
-predictions_images.each.with_index do |images, gridrow|
-  gridrow_offset = gridrow * image_size
-  images.slice(0,max_per_row).each.with_index do |image, gridcol|
-    gridcol_offset = gridcol * image_size
+  image_size = 28
+  max_per_row = 25
+  gridrows, gridcols = k, 25
 
-    img_row = 0
+  @png = ChunkyPNG::Image.new(gridcols * image_size, gridrows * image_size, ChunkyPNG::Color::TRANSPARENT)
 
-    (image_size * image_size).times do |p|
-      if p > 0 && p % image_size == 0
-        img_row += 1
+  predictions_images.each.with_index do |images, gridrow|
+    gridrow_offset = gridrow * image_size
+    images.slice(0,max_per_row).each.with_index do |image, gridcol|
+      gridcol_offset = gridcol * image_size
+
+      img_row = 0
+
+      (image_size * image_size).times do |p|
+        if p > 0 && p % image_size == 0
+          img_row += 1
+        end
+
+        img_col = p % image_size
+
+        pixel = image[p]
+        @png[img_col + gridcol_offset, img_row + gridrow_offset] = ChunkyPNG::Color("black @ #{pixel}")
       end
-
-      img_col = p % image_size
-
-      pixel = image[p]
-      @png[img_col + gridcol_offset, img_row + gridrow_offset] = ChunkyPNG::Color("black @ #{pixel}")
     end
   end
+
+  image_path = "examples/data/output/mnist_#{train_size}_#{runs}.png"
+  puts "\nSaving png to #{image_path}"
+  @png.save image_path, :compression => Zlib::NO_COMPRESSION
+
+  `open #{image_path}`
 end
-
-image_path = "examples/data/output/mnist_#{train_size}_#{runs}.png"
-puts "\nSaving png to #{image_path}"
-@png.save image_path, :compression => Zlib::NO_COMPRESSION
-
-`open #{image_path}`
-

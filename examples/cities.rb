@@ -8,9 +8,11 @@ require 'optparse'
 
 k = 10
 runs = 10
+skip_plot = false
 
 OptionParser.new do |opts|
   opts.on("-kK") {|v| k = v.to_i }
+  opts.on("--skip-plot") {|v| skip_plot = true }
 end.parse!
 
 cities = CSV.foreach("examples/data/us_cities.csv").map do |row|
@@ -35,25 +37,26 @@ puts "\nBest of #{runs} runs (total time #{elapsed.round(2)}s):"
 puts "#{k} clusters in #{kmeans.iterations} iterations, #{kmeans.runtime.round(2)}s, SSE #{kmeans.error.round(2)}"
 puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
 
+unless skip_plot
+  require 'gnuplot'
 
-require 'gnuplot'
+  outfile = "examples/data/output/cities_k#{k}.png"
 
-outfile = "examples/data/output/cities_k#{k}.png"
+  Gnuplot.open do |gp|
+    Gnuplot::Plot.new(gp) do |plot|
+      plot.terminal "png"
+      plot.output outfile
 
-Gnuplot.open do |gp|
-  Gnuplot::Plot.new(gp) do |plot|
-    plot.terminal "png"
-    plot.output outfile
+      kmeans.clusters.each do |cluster|
+        x = cluster.points.map { |p| p.label[:lng] }
+        y = cluster.points.map { |p| p.label[:lat] }
 
-    kmeans.clusters.each do |cluster|
-      x = cluster.points.map { |p| p.label[:lng] }
-      y = cluster.points.map { |p| p.label[:lat] }
-
-      plot.data << Gnuplot::DataSet.new([x, y]) do |ds|
-        ds.notitle
+        plot.data << Gnuplot::DataSet.new([x, y]) do |ds|
+          ds.notitle
+        end
       end
     end
   end
-end
 
-`open #{outfile}`
+  `open #{outfile}`
+end
