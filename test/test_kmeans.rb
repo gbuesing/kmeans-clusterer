@@ -151,4 +151,15 @@ class TestCluster < MiniTest::Test
     assert c1.dissimilarity(p3) > c1.dissimilarity(p2)
   end
 
+  def test_sorted_points
+    c = KMeansClusterer::Cluster.new KMeansClusterer::Point.new([-5,-7])
+    p1 = KMeansClusterer::Point.new [1,2]
+    p2 = KMeansClusterer::Point.new [6, 5]
+    c << p1
+    c << p2
+    sorted = c.sorted_points
+    assert_equal p1, sorted[0]
+    assert_equal p2, sorted[1]
+  end
+
 end

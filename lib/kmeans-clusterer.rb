@@ -44,13 +44,10 @@ class KMeansClusterer
     end
 
     def recenter
-      if @points.empty?
-        0
-      else
-        old_centroid = @centroid
-        @centroid = calculate_centroid_from_points
-        Distance.call @centroid.data, old_centroid.data
-      end
+      return 0 if @points.empty?
+      old_centroid = @centroid
+      @centroid = calculate_centroid_from_points
+      Distance.call @centroid.data, old_centroid.data
     end
 
     def << point
@@ -63,26 +60,23 @@ class KMeansClusterer
     end
 
     def sorted_points
-      distances = Distance.call points_narray, centroid.data
+      distances = points_distances_from(centroid)
       @points.sort_by.with_index {|c, i| distances[i] }
     end
 
     def sum_of_squares_error
-      if @points.empty?
-        0
-      else
-        distances = Distance.call points_narray, centroid.data
-        (distances**2).sum
-      end
+      return 0 if @points.empty?
+      distances = points_distances_from(centroid)
+      (distances**2).sum
     end
 
     def sum_of_distances
       return 0 if @points.empty?
-      Distance.call(points_narray, centroid.data).sum
+      points_distances_from(centroid).sum
     end
 
     def dissimilarity point
-      distances = Distance.call points_narray, point.data
+      distances = points_distances_from(point)
       distances.sum / distances.length.to_f
     end
 
@@ -90,6 +84,10 @@ class KMeansClusterer
       def calculate_centroid_from_points
         data = CalculateCentroid.call points_narray
         Point.new data
+      end
+
+      def points_distances_from point
+        Distance.call points_narray, point.data
       end
 
       def points_narray
