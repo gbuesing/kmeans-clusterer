@@ -2,9 +2,21 @@ require 'narray'
 
 class KMeansClusterer
 
-  # Euclidean distance function. Requires instances of NArray as args
-  Distance = -> (a, b) { NMath.sqrt ((a - b)**2).sum(0) }
   CalculateCentroid = -> (a) { a.mean(1) }
+
+  Distance = -> (x, y, yy = nil) do 
+    if x.is_a?(NMatrix) && y.is_a?(NMatrix)
+      xx = x.map {|v| v**2}.sum(0)
+      yy ||= y.map {|v| v**2}.sum(0)
+      xy = x * y.transpose
+      distance = xy * -2
+      distance += xx
+      distance += yy.transpose
+      NMath.sqrt distance
+    else
+      NMath.sqrt ((x - y)**2).sum(0)
+    end
+  end
 
   class Point
     attr_reader :data
@@ -108,6 +120,10 @@ class KMeansClusterer
     runcount = opts[:runs] || 10
     errors = []
 
+    opts[:points_matrix] = NMatrix.cast data
+    opts[:points_norms] = opts[:points_matrix].map {|v| v**2}.sum(0)
+
+
     runs = runcount.times.map do |i|
       km = new(k, data, opts).run
       error = km.error
@@ -145,6 +161,9 @@ class KMeansClusterer
       Point.new instance, labels[i]
     end
 
+    @points_matrix = opts[:points_matrix]
+    @points_norms = opts[:points_norms]
+
     init_clusters
   end
 
@@ -155,13 +174,7 @@ class KMeansClusterer
     loop do
       @iterations +=1
 
-      centroids = get_cluster_centroids
-
-      @points.each do |point|
-        distances = Distance.call(centroids, point.data)
-        cluster = @clusters.sort_by.with_index {|c, i| distances[i] }.first
-        cluster << point
-      end
+      assign_points_to_clusters
 
       moves = clusters.map(&:recenter)
 
@@ -173,6 +186,18 @@ class KMeansClusterer
 
     @runtime =  Time.now - start_time
     self
+  end
+
+  def assign_points_to_clusters
+    centroids = NMatrix.cast @clusters.map {|c| c.centroid.data}
+
+    distances = Distance.call(centroids, @points_matrix, @points_norms)
+
+    @points.each_with_index do |point, i|
+      min_distance_index = distances[i, true].sort_index[0]
+      cluster = @clusters[min_distance_index]
+      cluster << point
+    end
   end
 
   def error
@@ -270,11 +295,11 @@ class KMeansClusterer
     end
 end
 
-class KMediansClusterer < KMeansClusterer
-  Distance = -> (a, b) { (a - b).abs.sum(0) }
-  CalculateCentroid = -> (a) { a.rot90.median(0) }
+# class KMediansClusterer < KMeansClusterer
+#   Distance = -> (x, y, yy = nil) { (x - y).abs.sum(0) }
+#   CalculateCentroid = -> (a) { a.rot90.median(0) }
 
-  def error
-    @clusters.map(&:sum_of_distances).reduce(:+)
-  end
-end
+#   def error
+#     @clusters.map(&:sum_of_distances).reduce(:+)
+#   end
+# end
