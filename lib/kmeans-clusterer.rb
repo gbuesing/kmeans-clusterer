@@ -76,17 +76,19 @@ class KMeansClusterer
   def self.run k, data, opts = {}
     opts = DEFAULT_OPTS.merge(opts)
 
+    opts[:k] = k
+
     if opts[:scale_data]
       data, mean, std = Scaler.scale(data)
       opts[:mean] = mean
       opts[:std] = std
     end
 
-    points_matrix = NMatrix.cast(data, NArray::DFLOAT)
-    opts[:row_norms] = points_matrix.map {|v| v**2}.sum(0)
+    opts[:points_matrix] = NMatrix.cast(data, NArray::DFLOAT)
+    opts[:row_norms] = opts[:points_matrix].map {|v| v**2}.sum(0)
 
     runs = opts[:runs].times.map do |i|
-      km = new(k, points_matrix, opts).run
+      km = new(opts).run
       if opts[:log]
         puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{km.error.round(2)} err"
       end
@@ -100,14 +102,14 @@ class KMeansClusterer
   attr_reader :k, :points, :clusters, :error, :iterations, :runtime
 
 
-  def initialize k, points_matrix, opts = {}
-    @k = k
-    @init = opts[:init] || :kmpp
+  def initialize opts = {}
+    @k = opts[:k]
+    @init = opts[:init]
     @labels = opts[:labels] || []
     @row_norms = opts[:row_norms]
 
-    @points_matrix = points_matrix
-    @points_count = @points_matrix.shape[1]
+    @points_matrix = opts[:points_matrix]
+    @points_count = @points_matrix.shape[1] if @points_matrix
     @mean = opts[:mean]
     @std = opts[:std]
     @scale_data = opts[:scale_data]
@@ -262,6 +264,7 @@ class KMeansClusterer
 
     def custom_centroid_init
       @centroids = NMatrix.cast @init
+      @k = @init.length
     end
 
     def random_centroid_init

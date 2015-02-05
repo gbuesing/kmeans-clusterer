@@ -27,13 +27,13 @@ class TestKMeansClusterer < MiniTest::Test
   end
 
   def test_distance_calculation
-    km = KMeansClusterer.new(1, NMatrix[[1]]) 
+    km = KMeansClusterer.new(init: [[1]]) # dummy init
     d = km.send :distance, NArray[1,1], NArray[2,2]
     assert_in_delta Math.sqrt(2), d
   end
 
   def test_distance_calculation_with_matrix
-    km = KMeansClusterer.new(1, NMatrix[[1]]) 
+    km = KMeansClusterer.new(init: [[1]]) # dummy init
     d = km.send :distance, NArray[[1,1],[5,5]].to_f, NArray[2,2].to_f
     assert_in_delta Math.sqrt(2), d[0]
     assert_in_delta Math.sqrt(18), d[1]
@@ -42,7 +42,7 @@ class TestKMeansClusterer < MiniTest::Test
   def test_distance_calculation_with_matrix
     # [ [ 0.0, 1.41421, 2.82843, 5.65685, 12.7279 ], 
     # [ 5.65685, 4.24264, 2.82843, 0.0, 7.07107 ] ]
-    km = KMeansClusterer.new(1, NMatrix[[1]]) 
+    km = KMeansClusterer.new(init: [[1]]) # dummy init
     d = km.send :distance, NMatrix[[1,1],[5,5]].to_f, NMatrix[[1,1],[2,2],[3,3],[5,5],[10,10]].to_f
     assert_in_delta 0.0, d[0,true][0]
     assert_in_delta Math.sqrt(32), d[0,true][1]
@@ -69,6 +69,14 @@ class TestKMeansClusterer < MiniTest::Test
 
     assert_equal [5.5, 5.0, 107.5], mean.to_a
     assert_equal [4.5, 1.0, 97.5], std.to_a
+  end
+
+
+  def test_prediction_instance_init_with_custom_centroids
+    km = KMeansClusterer.new init: [[2,2], [-2,-2]]
+    predicted = km.predict [[3,3], [-3,-3]]
+    assert_equal 0, predicted[0]
+    assert_equal 1, predicted[1]
   end
 
 end
