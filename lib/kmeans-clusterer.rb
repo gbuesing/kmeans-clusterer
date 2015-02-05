@@ -7,7 +7,7 @@ class KMeansClusterer
     attr_accessor :cluster, :label
 
     def initialize data, label = nil
-      @data = NArray.to_na data
+      @data = data
       @label = label
     end
 
@@ -91,10 +91,10 @@ class KMeansClusterer
     @k = k
     @init = opts[:init] || :kmpp
     @labels = opts[:labels] || []
+    @row_norms = opts[:row_norms]
 
     @points_matrix = points_matrix
     @points_count = @points_matrix.shape[1]
-    @row_norms = opts[:row_norms]
 
     init_centroids
   end
@@ -116,13 +116,13 @@ class KMeansClusterer
         @cluster_point_ids[min_distance_index] << i
       end
 
-      # moves = clusters.map(&:recenter)
       moves = []
       updated_centroids = []
 
       @k.times do |i|
         centroid = NArray.cast(@centroids[true, i].flatten)
         point_ids = @cluster_point_ids[i]
+
         if point_ids.empty?
           newcenter = centroid
           moves << 0
@@ -131,6 +131,7 @@ class KMeansClusterer
           newcenter = points.mean(1)
           moves << distance(centroid, newcenter)
         end
+
         updated_centroids << newcenter
       end
 
@@ -139,24 +140,12 @@ class KMeansClusterer
       break if moves.max < 0.001 # i.e., no movement
       break if @iterations >= 300
 
-      # clusters.each(&:reset_points)
       @cluster_point_ids = Array.new(@k) { [] }
     end
 
-    @points = @points_count.times.map do |i|
-      data = NArray.cast @points_matrix[true, i].flatten
-      Point.new(data, @labels[i])
-    end
-
-    @clusters = @k.times.map do |i|
-      centroid = NArray.cast @centroids[true, i].flatten
-      c = Cluster.new Point.new(centroid), i + 1
-      @cluster_point_ids[i].each do |p|
-        c << @points[p]
-      end
-      c
-    end
-
+    set_points
+    set_clusters
+    
     @runtime =  Time.now - start_time
     self
   end
@@ -166,7 +155,7 @@ class KMeansClusterer
       if c.points.empty?
         0
       else
-        distances = distance NArray.cast(c.points.map(&:data)), c.centroid.data
+        distances = distance c.points_narray, c.centroid.data
         (distances**2).sum
       end
     end
@@ -179,14 +168,14 @@ class KMeansClusterer
   end
 
   def sorted_clusters point = origin
-    point = Point.new(point) unless point.is_a?(Point)
+    point = wrap_point point
     centroids = get_cluster_centroids
     distances = distance(centroids, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
   def origin
-    Point.new Array.new(@points[0].dimension, 0)
+    wrap_point Array.new(@points[0].dimension, 0) 
   end
 
   def silhouette_score
@@ -203,6 +192,11 @@ class KMeansClusterer
   end
 
   private
+    def wrap_point point
+      return point if point.is_a?(Point)
+      Point.new(NArray.to_na(point).to_f)
+    end
+
     def dissimilarity points, point
       distances = distance points, point
       distances.sum / distances.length.to_f
@@ -261,6 +255,24 @@ class KMeansClusterer
 
     def get_cluster_centroids
       NArray.to_na @clusters.map {|c| c.centroid.data }
+    end
+
+    def set_points
+      @points = @points_count.times.map do |i|
+        data = NArray.cast @points_matrix[true, i].flatten
+        Point.new(data, @labels[i])
+      end
+    end
+
+    def set_clusters
+      @clusters = @k.times.map do |i|
+        centroid = NArray.cast @centroids[true, i].flatten
+        c = Cluster.new Point.new(centroid), i + 1
+        @cluster_point_ids[i].each do |p|
+          c << @points[p]
+        end
+        c
+      end
     end
 
     def distance x, y, yy = @row_norms
