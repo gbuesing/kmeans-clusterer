@@ -40,14 +40,14 @@ k = 2 # find 2 clusters in data
 kmeans = KMeansClusterer.run k, data, labels: labels, runs: 5
 
 kmeans.clusters.each do |cluster|
-  puts  cluster.label.to_s + '. ' + 
+  puts  cluster.id.to_s + '. ' + 
         cluster.points.map(&:label).join(", ") + "\t" +
         cluster.centroid.to_s
 end
 
 # Use existing clusters for prediction with new data:
-cluster = kmeans.closest_cluster [41.85,-87.65] # Chicago
-puts "\nClosest cluster to Chicago: #{cluster.label}"
+predicted = kmeans.predict [[41.85,-87.65]] # Chicago
+puts "\nClosest cluster to Chicago: #{predicted[0]}"
 
 # Clustering quality score. Value between -1.0..1.0 (1.0 is best)
 puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
@@ -56,10 +56,10 @@ puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
 Output of simple example:
 
 ```
-1. New York, Baltimore, Washington DC [39.63, -75.89]
-2. Los Angeles, Portland, Las Vegas [38.56, -118.7]
+0. New York, Baltimore, Washington DC [39.63, -75.89]
+1. Los Angeles, Portland, Las Vegas [38.56, -118.7]
 
-Closest cluster to Chicago: 1
+Closest cluster to Chicago: 0
 
 Silhouette score: 0.91
 ```

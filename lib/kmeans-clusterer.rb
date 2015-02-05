@@ -50,12 +50,12 @@ class KMeansClusterer
 
 
   class Cluster
-    attr_reader :centroid, :points
+    attr_reader :id, :centroid, :points
     attr_accessor :label
 
-    def initialize centroid, label = nil
+    def initialize id, centroid
+      @id = id
       @centroid = centroid
-      @label = label
       @points = []
     end
 
@@ -285,7 +285,7 @@ class KMeansClusterer
     def set_clusters
       @clusters = @k.times.map do |i|
         centroid = NArray.cast @centroids[true, i].flatten
-        c = Cluster.new Point.new(centroid), i + 1
+        c = Cluster.new i, Point.new(centroid)
         @cluster_point_ids[i].each do |p|
           c << @points[p]
         end

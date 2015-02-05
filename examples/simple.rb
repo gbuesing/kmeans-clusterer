@@ -16,7 +16,7 @@ data = [
 kmeans = KMeansClusterer.run 4, data
 
 kmeans.clusters.each do |cluster|
-  puts  cluster.label.to_s + '. ' + # label 1-k
+  puts  cluster.id.to_s + '. ' + # label 1-k
         cluster.centroid.to_s + ": " + 
         cluster.points.join(", ")
 end
@@ -57,7 +57,7 @@ labels = ['New York', 'Los Angeles', 'Baltimore',
 kmeans = KMeansClusterer.run 2, latlngs, labels: labels, runs: 1
 
 kmeans.clusters.each do |cluster|
-  puts  cluster.label.to_s + '. ' + 
+  puts  cluster.id.to_s + '. ' + 
         cluster.points.map(&:label).join(", ") + "\t" +
         cluster.centroid.to_a.map {|v| v.round(2)}.to_s
 end
