@@ -169,8 +169,7 @@ class KMeansClusterer
     @points_norms = opts[:points_norms]
     @points_count = @points_matrix.shape[1]
 
-    # init_clusters
-    @centroids = @points_matrix[true, pick_k_random_indexes]
+    init_centroids
   end
 
   def run 
@@ -282,57 +281,51 @@ class KMeansClusterer
       distances.sum / distances.length.to_f
     end
 
-    def init_clusters
+    def init_centroids
       case @init
       when :random
-        random_cluster_init
+        random_centroid_init
       when Array
-        custom_cluster_init
+        custom_centroid_init
       else
-        kmpp_cluster_init
+        kmpp_centroid_init
       end
     end
 
     # k-means++
-    def kmpp_cluster_init
-      @clusters = []
-      pick = rand(@points.length)
-      centroid = Point.new @points[pick].data.to_a
-      @clusters << Cluster.new(centroid, 1)
+    def kmpp_centroid_init
+      centroid_ids = []
+      pick = rand(@points_count)
+      centroid_ids << pick
 
-      while @clusters.length < @k
-        centroids = get_cluster_centroids
+      while centroid_ids.length < @k
+        centroids = @points_matrix[true, centroid_ids]
 
-        d2 = @points.map do |point|
-          dists = Distance.call centroids, point.data
-          dists.min**2 # closest cluster distance, squared
+        distances = Distance.call(centroids, @points_matrix, @points_norms)
+
+        d2 = []
+        @points_count.times do |i|
+          min_distance = distances[i, true].min
+          d2 << min_distance**2
         end
 
         d2 = NArray.to_na d2
         probs = d2 / d2.sum
         cumprobs = probs.cumsum
         r = rand
-        # pick = cumprobs.to_a.index {|prob| r < prob }
         pick = (cumprobs >= r).where[0]
-        centroid = Point.new @points[pick].data.to_a
-        cluster = Cluster.new(centroid, @clusters.length + 1)
-        @clusters << cluster
+        centroid_ids << pick
       end
+
+      @centroids = @points_matrix[true, centroid_ids]
     end
 
-    def custom_cluster_init
-      @clusters = @init.map.with_index do |instance, i|
-        point = Point.new NArray.to_na(instance).to_f
-        Cluster.new point, i+1
-      end
+    def custom_centroid_init
+      @centroids = NMatrix.cast @init
     end
 
-    def random_cluster_init
-      @clusters = pick_k_random_points.map.with_index {|centroid, i| Cluster.new centroid, i+1 }
-    end
-
-    def pick_k_random_points
-      pick_k_random_indexes.map {|i| Point.new @points[i].data.to_a }
+    def random_centroid_init
+      @centroids = @points_matrix[true, pick_k_random_indexes]
     end
 
     def pick_k_random_indexes
