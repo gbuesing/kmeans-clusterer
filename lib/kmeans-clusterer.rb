@@ -50,8 +50,12 @@ class KMeansClusterer
   end
 
 
+  DEFAULT_OPTS = { scale_data: false, runs: 10, log: false, init: :kmpp}
+
   def self.run k, data, opts = {}
     raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
+
+    opts = DEFAULT_OPTS.merge(opts)
 
     data = if opts[:scale_data]
       scale_data data
@@ -59,14 +63,13 @@ class KMeansClusterer
       data.map {|row| NArray.to_na(row).to_f}
     end
 
-    runcount = opts[:runs] || 10
     errors = []
 
     points_matrix = NMatrix.cast data
     opts[:row_norms] = points_matrix.map {|v| v**2}.sum(0)
 
 
-    runs = runcount.times.map do |i|
+    runs = opts[:runs].times.map do |i|
       km = new(k, points_matrix, opts).run
       error = km.error
       if opts[:log]
