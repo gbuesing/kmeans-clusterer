@@ -164,12 +164,19 @@ class KMeansClusterer
   end
 
   def silhouette_score
-    return 1.0 if @clusters.length < 2
-    
-    scores = @points.map do |point|
-      acluster, bcluster = sorted_clusters(point).slice(0,2)
-      a = dissimilarity(acluster.points_narray, point.data)
-      b = dissimilarity(bcluster.points_narray, point.data)
+    return 1.0 if @k < 2
+
+    distances = distance(@centroids, @points_matrix)
+
+    scores = @points_count.times.map do |i|
+      point = get_point i
+      cluster_indexes = distances[i, true].sort_index
+
+      c1_points = get_points_for_centroid cluster_indexes[0]
+      c2_points = get_points_for_centroid cluster_indexes[1]
+
+      a = dissimilarity(c1_points, point)
+      b = dissimilarity(c2_points, point)
       (b - a) / [a,b].max
     end
 
@@ -262,18 +269,31 @@ class KMeansClusterer
 
     def calculate_error
       errors = @k.times.map do |i|
-        point_ids = @cluster_point_ids[i]
-        if point_ids.empty?
+        centroid = get_centroid i
+        points = get_points_for_centroid i
+
+        if points.empty?
           0
         else
-          centroid = NArray.cast(@centroids[true, i].flatten)
-          points = NArray.cast @points_matrix[true, point_ids]
           distances = distance points, centroid
           (distances**2).sum
         end
       end
 
       errors.reduce(:+)
+    end
+
+    def get_point i
+      NArray.cast @points_matrix[true, i].flatten
+    end
+
+    def get_centroid i
+      NArray.cast(@centroids[true, i].flatten)
+    end
+
+    def get_points_for_centroid i
+      point_ids = @cluster_point_ids[i]
+      NArray.cast @points_matrix[true, point_ids]
     end
 
     def distance x, y, yy = @row_norms
