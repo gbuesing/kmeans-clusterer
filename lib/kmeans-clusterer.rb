@@ -92,6 +92,10 @@ class KMeansClusterer
       distances.sum / distances.length.to_f
     end
 
+    def points_narray
+      NArray.cast @points.map(&:data)
+    end
+
     private
       def calculate_centroid_from_points
         data = CalculateCentroid.call points_narray
@@ -102,9 +106,9 @@ class KMeansClusterer
         Distance.call points_narray, point.data
       end
 
-      def points_narray
-        NArray.to_na @points.map(&:data)
-      end
+      # def points_narray
+      #   NArray.to_na @points.map(&:data)
+      # end
   end
 
 
@@ -264,8 +268,8 @@ class KMeansClusterer
     
     scores = @points.map do |point|
       acluster, bcluster = sorted_clusters(point).slice(0,2)
-      a = acluster.dissimilarity(point)
-      b = bcluster.dissimilarity(point)
+      a = dissimilarity(acluster.points_narray, point.data)
+      b = dissimilarity(bcluster.points_narray, point.data)
       (b - a) / [a,b].max
     end
 
@@ -273,6 +277,11 @@ class KMeansClusterer
   end
 
   private
+    def dissimilarity points, point
+      distances = Distance.call points, point
+      distances.sum / distances.length.to_f
+    end
+
     def init_clusters
       case @init
       when :random
