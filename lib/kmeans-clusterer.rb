@@ -23,10 +23,11 @@ class KMeansClusterer
 
 
   class Point
-    attr_reader :data
+    attr_reader :id, :data
     attr_accessor :cluster, :label
 
-    def initialize data, label = nil
+    def initialize id, data, label = nil
+      @id = id
       @data = data
       @label = label
     end
@@ -212,7 +213,7 @@ class KMeansClusterer
   private
     def wrap_point point
       return point if point.is_a?(Point)
-      Point.new(NArray.to_na(point).to_f)
+      Point.new(0, NArray.to_na(point).to_f)
     end
 
     def dissimilarity points, point
@@ -278,14 +279,14 @@ class KMeansClusterer
     def set_points
       @points = @points_count.times.map do |i|
         data = NArray.cast @points_matrix[true, i].flatten
-        Point.new(data, @labels[i])
+        Point.new(i, data, @labels[i])
       end
     end
 
     def set_clusters
       @clusters = @k.times.map do |i|
         centroid = NArray.cast @centroids[true, i].flatten
-        c = Cluster.new i, Point.new(centroid)
+        c = Cluster.new i, Point.new(-i, centroid)
         @cluster_point_ids[i].each do |p|
           c << @points[p]
         end
