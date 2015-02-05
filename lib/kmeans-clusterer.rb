@@ -2,22 +2,6 @@ require 'narray'
 
 class KMeansClusterer
 
-  CalculateCentroid = -> (a) { a.mean(1) }
-
-  Distance = -> (x, y, yy = nil) do 
-    if x.is_a?(NMatrix) && y.is_a?(NMatrix)
-      xx = x.map {|v| v**2}.sum(0)
-      yy ||= y.map {|v| v**2}.sum(0)
-      xy = x * y.transpose
-      distance = xy * -2
-      distance += xx
-      distance += yy.transpose
-      NMath.sqrt distance
-    else
-      NMath.sqrt ((x - y)**2).sum(0)
-    end
-  end
-
   class Point
     attr_reader :data
     attr_accessor :cluster, :label
@@ -135,7 +119,7 @@ class KMeansClusterer
     loop do
       @iterations +=1
 
-      distances = Distance.call(@centroids, @points_matrix, @points_norms)
+      distances = distance(@centroids, @points_matrix, @points_norms)
 
       # assign point ids to @cluster_point_ids
       @points_count.times do |i|
@@ -156,7 +140,7 @@ class KMeansClusterer
         else
           points = @points_matrix[true, point_ids]
           newcenter = points.mean(1)
-          moves << Distance.call(centroid, newcenter)
+          moves << distance(centroid, newcenter)
         end
         updated_centroids << newcenter
       end
@@ -193,7 +177,7 @@ class KMeansClusterer
       if c.points.empty?
         0
       else
-        distances = Distance.call NArray.cast(c.points.map(&:data)), c.centroid.data
+        distances = distance NArray.cast(c.points.map(&:data)), c.centroid.data
         (distances**2).sum
       end
     end
@@ -208,7 +192,7 @@ class KMeansClusterer
   def sorted_clusters point = origin
     point = Point.new(point) unless point.is_a?(Point)
     centroids = get_cluster_centroids
-    distances = Distance.call(centroids, point.data)
+    distances = distance(centroids, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
@@ -231,7 +215,7 @@ class KMeansClusterer
 
   private
     def dissimilarity points, point
-      distances = Distance.call points, point
+      distances = distance points, point
       distances.sum / distances.length.to_f
     end
 
@@ -255,7 +239,7 @@ class KMeansClusterer
       while centroid_ids.length < @k
         centroids = @points_matrix[true, centroid_ids]
 
-        distances = Distance.call(centroids, @points_matrix, @points_norms)
+        distances = distance(centroids, @points_matrix, @points_norms)
 
         d2 = []
         @points_count.times do |i|
@@ -288,6 +272,20 @@ class KMeansClusterer
 
     def get_cluster_centroids
       NArray.to_na @clusters.map {|c| c.centroid.data }
+    end
+
+    def distance x, y, yy = nil
+      if x.is_a?(NMatrix) && y.is_a?(NMatrix)
+        xx = x.map {|v| v**2}.sum(0)
+        yy ||= y.map {|v| v**2}.sum(0)
+        xy = x * y.transpose
+        distance = xy * -2
+        distance += xx
+        distance += yy.transpose
+        NMath.sqrt distance
+      else
+        NMath.sqrt ((x - y)**2).sum(0)
+      end
     end
 end
 
