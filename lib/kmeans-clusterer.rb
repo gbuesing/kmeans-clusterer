@@ -1,6 +1,26 @@
 require 'narray'
 
 class KMeansClusterer
+  module Scaler
+    def self.mean data
+      data.mean(1)
+    end
+
+    def self.std data
+      std = data.rmsdev(1)
+      std[std.eq(0)] = 1.0 # so we don't divide by 0
+      std
+    end
+
+    def self.scale data, mean = nil, std = nil
+      data = NArray.cast(data, NArray::DFLOAT)
+      mean ||= self.mean(data)
+      std ||= self.std(data)
+      data = (data - mean) / std
+      [data, mean, std]
+    end
+  end
+
 
   class Point
     attr_reader :data
@@ -55,7 +75,12 @@ class KMeansClusterer
   def self.run k, data, opts = {}
     opts = DEFAULT_OPTS.merge(opts)
 
-    data = scale_data(data) if opts[:scale_data]
+    if opts[:scale_data]
+      data, mean, std = Scaler.scale(data)
+      opts[:mean] = mean
+      opts[:std] = std
+    end
+
     points_matrix = NMatrix.cast(data, NArray::DFLOAT)
     opts[:row_norms] = points_matrix.map {|v| v**2}.sum(0)
 
@@ -70,15 +95,6 @@ class KMeansClusterer
     runs.sort_by {|run| run.error }.first.finish
   end
 
-  # see scikit-learn scale and _mean_and_std methods
-  def self.scale_data data
-    nadata = NArray.cast(data, NArray::DFLOAT)
-    mean = nadata.mean(1)
-    std = nadata.rmsdev(1)
-    std[std.eq(0)] = 1.0 # so we don't divide by 0
-    nadata = (nadata - mean) / std
-  end
-
 
   attr_reader :k, :points, :clusters, :error, :iterations, :runtime
 
@@ -91,6 +107,9 @@ class KMeansClusterer
 
     @points_matrix = points_matrix
     @points_count = @points_matrix.shape[1]
+    @mean = opts[:mean]
+    @std = opts[:std]
+    @scale_data = opts[:scale_data]
 
     init_centroids
   end
@@ -150,8 +169,13 @@ class KMeansClusterer
     self
   end
 
-  def closest_cluster point = origin
-    sorted_clusters(point).first
+  def predict data
+    data, _m, _s = Scaler.scale(data, @mean, @std) if @scale_data
+    data = NMatrix.cast(data, NArray::DFLOAT)
+    distances = distance(@centroids, data, nil)
+    data.shape[1].times.map do |i|
+      distances[i, true].sort_index[0] # index of closest cluster
+    end
   end
 
   def sorted_clusters point = origin

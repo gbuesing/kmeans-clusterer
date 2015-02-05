@@ -63,8 +63,8 @@ kmeans.clusters.each do |cluster|
 end
 
 # Use existing clusters for prediction with new data:
-cluster = kmeans.closest_cluster [41.85,-87.65] # Chicago
-puts "\nClosest cluster to Chicago: #{cluster.label}"
+predicted = kmeans.predict [[41.85,-87.65]] # Chicago
+puts "\nClosest cluster to Chicago: #{predicted[0]}"
 
 puts "\nSSE: #{kmeans.error.round(2)}"
 puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"

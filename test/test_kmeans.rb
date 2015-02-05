@@ -56,7 +56,7 @@ class TestKMeansClusterer < MiniTest::Test
       [10,5,205]
     ]
 
-    actual = KMeansClusterer.scale_data input
+    actual, mean, std = KMeansClusterer::Scaler.scale input
 
     expected = [
       [ -1.0, 0.0, -1.0 ],
@@ -66,6 +66,9 @@ class TestKMeansClusterer < MiniTest::Test
     assert_equal [3,2], actual.shape
     assert_equal expected[0], actual[true, 0].to_a
     assert_equal expected[1], actual[true, 1].to_a
+
+    assert_equal [5.5, 5.0, 107.5], mean.to_a
+    assert_equal [4.5, 1.0, 97.5], std.to_a
   end
 
 end

@@ -38,7 +38,7 @@ test_data, test_labels = data.slice(train_size, test_size), labels.slice(train_s
 puts "Clustering #{train_size} images:"
 
 t = Time.now
-kmeans = KMeansClusterer.run(k, train_data, labels: train_labels, runs: runs, log: true)
+kmeans = KMeansClusterer.run(k, train_data, labels: train_labels, runs: runs, log: true, scale_data: true)
 elapsed = Time.now - t
 
 # kmeans.clusters.each do |cluster|
@@ -56,10 +56,11 @@ puts "\nUsing kmeans to cluster #{test_size} samples from test set:\n\n"
 
 predictions_labels = Array.new(k) { [] }
 
-test_data.each.with_index do |row, i|
+predictions = kmeans.predict test_data
+
+predictions.each_with_index do |predict, i|
   label = test_labels[i]
-  cluster = kmeans.closest_cluster row
-  predictions_labels[cluster.label - 1] << label
+  predictions_labels[predict] << label
 end
 
 predictions_labels.each do |vals|
@@ -70,18 +71,17 @@ end
 
 # png output: show actual images
 
-predictions_images = Array.new(k) { [] }
-
-orig_test = orig_data.slice(train_size, test_size)
-
-test_data.each.with_index do |row, i|
-  cluster = kmeans.closest_cluster row
-  predictions_images[cluster.label - 1] << orig_test[i]
-end
-
-
 unless skip_plot
   require 'chunky_png'
+
+  predictions_images = Array.new(k) { [] }
+
+  orig_test = orig_data.slice(train_size, test_size)
+
+  predictions.each_with_index do |predict, i|
+    label = test_labels[i]
+    predictions_images[predict] << orig_test[i]
+  end
 
   image_size = 28
   max_per_row = 25
