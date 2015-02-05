@@ -62,12 +62,12 @@ class KMeansClusterer
     runcount = opts[:runs] || 10
     errors = []
 
-    opts[:points_matrix] = NMatrix.cast data
-    opts[:points_norms] = opts[:points_matrix].map {|v| v**2}.sum(0)
+    points_matrix = NMatrix.cast data
+    opts[:points_norms] = points_matrix.map {|v| v**2}.sum(0)
 
 
     runs = runcount.times.map do |i|
-      km = new(k, data, opts).run
+      km = new(k, points_matrix, opts).run
       error = km.error
       if opts[:log]
         puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{error.round(2)} err"
@@ -94,18 +94,14 @@ class KMeansClusterer
   attr_reader :k, :points, :clusters, :iterations, :runtime
 
 
-  def initialize k, data, opts = {}
+  def initialize k, points_matrix, opts = {}
     @k = k
     @init = opts[:init] || :kmpp
     @labels = opts[:labels] || []
 
-    # @points = data.map.with_index do |instance, i|
-    #   Point.new instance, labels[i]
-    # end
-
-    @points_matrix = opts[:points_matrix]
-    @points_norms = opts[:points_norms]
+    @points_matrix = points_matrix
     @points_count = @points_matrix.shape[1]
+    @points_norms = opts[:points_norms]
 
     init_centroids
   end
