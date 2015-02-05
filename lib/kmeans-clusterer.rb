@@ -55,60 +55,14 @@ class KMeansClusterer
       @points = []
     end
 
-    def recenter
-      return 0 if @points.empty?
-      old_centroid = @centroid
-      @centroid = calculate_centroid_from_points
-      Distance.call @centroid.data, old_centroid.data
-    end
-
     def << point
       point.cluster = self
       @points << point
     end
 
-    def reset_points
-      @points = []
-    end
-
-    def sorted_points
-      distances = points_distances_from(centroid)
-      @points.sort_by.with_index {|c, i| distances[i] }
-    end
-
-    def sum_of_squares_error
-      return 0 if @points.empty?
-      distances = points_distances_from(centroid)
-      (distances**2).sum
-    end
-
-    def sum_of_distances
-      return 0 if @points.empty?
-      points_distances_from(centroid).sum
-    end
-
-    def dissimilarity point
-      distances = points_distances_from(point)
-      distances.sum / distances.length.to_f
-    end
-
     def points_narray
       NArray.cast @points.map(&:data)
     end
-
-    private
-      def calculate_centroid_from_points
-        data = CalculateCentroid.call points_narray
-        Point.new data
-      end
-
-      def points_distances_from point
-        Distance.call points_narray, point.data
-      end
-
-      # def points_narray
-      #   NArray.to_na @points.map(&:data)
-      # end
   end
 
 
