@@ -63,7 +63,7 @@ class KMeansClusterer
     errors = []
 
     points_matrix = NMatrix.cast data
-    opts[:points_norms] = points_matrix.map {|v| v**2}.sum(0)
+    opts[:row_norms] = points_matrix.map {|v| v**2}.sum(0)
 
 
     runs = runcount.times.map do |i|
@@ -101,7 +101,7 @@ class KMeansClusterer
 
     @points_matrix = points_matrix
     @points_count = @points_matrix.shape[1]
-    @points_norms = opts[:points_norms]
+    @row_norms = opts[:row_norms]
 
     init_centroids
   end
@@ -115,7 +115,7 @@ class KMeansClusterer
     loop do
       @iterations +=1
 
-      distances = distance(@centroids, @points_matrix, @points_norms)
+      distances = distance(@centroids, @points_matrix)
 
       # assign point ids to @cluster_point_ids
       @points_count.times do |i|
@@ -235,7 +235,7 @@ class KMeansClusterer
       while centroid_ids.length < @k
         centroids = @points_matrix[true, centroid_ids]
 
-        distances = distance(centroids, @points_matrix, @points_norms)
+        distances = distance(centroids, @points_matrix)
 
         d2 = []
         @points_count.times do |i|
@@ -270,7 +270,7 @@ class KMeansClusterer
       NArray.to_na @clusters.map {|c| c.centroid.data }
     end
 
-    def distance x, y, yy = nil
+    def distance x, y, yy = @row_norms
       if x.is_a?(NMatrix) && y.is_a?(NMatrix)
         xx = x.map {|v| v**2}.sum(0)
         yy ||= y.map {|v| v**2}.sum(0)
