@@ -24,19 +24,19 @@ end
 puts "\nSSE: #{kmeans.error.round(2)}"
 puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
 
-puts "\n---\n"
+# puts "\n---\n"
 
-puts "\nk-medians:\n\n"
+# puts "\nk-medians:\n\n"
 
-kmedians = KMediansClusterer.run 4, data
-kmedians.clusters.each do |cluster|
-  puts  cluster.label.to_s + '. ' + # label 1-k
-        cluster.centroid.to_s + ": " + 
-        cluster.points.join(", ")
-end
+# kmedians = KMediansClusterer.run 4, data
+# kmedians.clusters.each do |cluster|
+#   puts  cluster.label.to_s + '. ' + # label 1-k
+#         cluster.centroid.to_s + ": " + 
+#         cluster.points.join(", ")
+# end
 
-puts "\nSSE: #{kmedians.error.round(2)}"
-puts "Silhouette score: #{kmedians.silhouette_score.round(2)}"
+# puts "\nSSE: #{kmedians.error.round(2)}"
+# puts "Silhouette score: #{kmedians.silhouette_score.round(2)}"
 
 # Outputs:
 # [3, 3], [3, 4], [4, 3]

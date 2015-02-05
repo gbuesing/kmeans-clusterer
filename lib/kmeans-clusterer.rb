@@ -155,53 +155,93 @@ class KMeansClusterer
   def initialize k, data, opts = {}
     @k = k
     @init = opts[:init] || :kmpp
-    labels = opts[:labels] || []
+    @labels = opts[:labels] || []
 
-    @points = data.map.with_index do |instance, i|
-      Point.new instance, labels[i]
-    end
+    # @points = data.map.with_index do |instance, i|
+    #   Point.new instance, labels[i]
+    # end
 
     @points_matrix = opts[:points_matrix]
     @points_norms = opts[:points_norms]
+    @points_count = @points_matrix.shape[1]
 
-    init_clusters
+    # init_clusters
+    @centroids = @points_matrix[true, pick_k_random_indexes]
   end
 
   def run 
     start_time = Time.now
     @iterations, @runtime = 0, 0
 
+    @cluster_point_ids = Array.new(@k) { [] }
+
     loop do
       @iterations +=1
 
-      assign_points_to_clusters
+      distances = Distance.call(@centroids, @points_matrix, @points_norms)
 
-      moves = clusters.map(&:recenter)
+      # assign point ids to @cluster_point_ids
+      @points_count.times do |i|
+        min_distance_index = distances[i, true].sort_index[0]
+        @cluster_point_ids[min_distance_index] << i
+      end
+
+      # moves = clusters.map(&:recenter)
+      moves = []
+      updated_centroids = []
+
+      @k.times do |i|
+        centroid = NArray.cast(@centroids[true, i].flatten)
+        point_ids = @cluster_point_ids[i]
+        if point_ids.empty?
+          newcenter = centroid
+          moves << 0
+        else
+          points = @points_matrix[true, point_ids]
+          newcenter = points.mean(1)
+          moves << Distance.call(centroid, newcenter)
+        end
+        updated_centroids << newcenter
+      end
+
+      @centroids = NMatrix.cast updated_centroids
 
       break if moves.max < 0.001 # i.e., no movement
       break if @iterations >= 300
 
-      clusters.each(&:reset_points)
+      # clusters.each(&:reset_points)
+      @cluster_point_ids = Array.new(@k) { [] }
+    end
+
+    @points = @points_count.times.map do |i|
+      data = NArray.cast @points_matrix[true, i].flatten
+      Point.new(data, @labels[i])
+    end
+
+    @clusters = @k.times.map do |i|
+      centroid = NArray.cast @centroids[true, i].flatten
+      c = Cluster.new Point.new(centroid), i + 1
+      @cluster_point_ids[i].each do |p|
+        c << @points[p]
+      end
+      c
     end
 
     @runtime =  Time.now - start_time
     self
   end
 
-  def assign_points_to_clusters
-    centroids = NMatrix.cast @clusters.map {|c| c.centroid.data}
-
-    distances = Distance.call(centroids, @points_matrix, @points_norms)
-
-    @points.each_with_index do |point, i|
-      min_distance_index = distances[i, true].sort_index[0]
-      cluster = @clusters[min_distance_index]
-      cluster << point
-    end
-  end
-
   def error
-    @clusters.map(&:sum_of_squares_error).reduce(:+)
+    errors = @clusters.map do |c|
+      if c.points.empty?
+        0
+      else
+        distances = Distance.call NArray.cast(c.points.map(&:data)), c.centroid.data
+        (distances**2).sum
+      end
+    end
+
+    errors.reduce(:+)
   end
 
   def closest_cluster point = origin
@@ -287,7 +327,7 @@ class KMeansClusterer
     end
 
     def pick_k_random_indexes
-      @points.length.times.to_a.shuffle.slice(0, @k)
+      @points_count.times.to_a.shuffle.slice(0, @k)
     end
 
     def get_cluster_centroids
