@@ -87,15 +87,21 @@ class KMeansClusterer
     opts[:points_matrix] = NMatrix.cast(data, NArray::DFLOAT)
     opts[:row_norms] = opts[:points_matrix].map {|v| v**2}.sum(0)
 
-    runs = opts[:runs].times.map do |i|
+    bestrun = nil
+
+    opts[:runs].times do |i|
       km = new(opts).run
+
       if opts[:log]
         puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{km.error.round(2)} err"
       end
-      km
+      
+      if bestrun.nil? || (km.error < bestrun.error)
+        bestrun = km
+      end
     end
 
-    runs.sort_by {|run| run.error }.first.finish
+    bestrun.finish
   end
 
 
