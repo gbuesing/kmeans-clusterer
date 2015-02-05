@@ -337,12 +337,3 @@ class KMeansClusterer
       end
     end
 end
-
-# class KMediansClusterer < KMeansClusterer
-#   Distance = -> (x, y, yy = nil) { (x - y).abs.sum(0) }
-#   CalculateCentroid = -> (a) { a.rot90.median(0) }
-
-#   def error
-#     @clusters.map(&:sum_of_distances).reduce(:+)
-#   end
-# end

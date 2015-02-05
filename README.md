@@ -1,7 +1,7 @@
 KMeansClusterer
 ===
 
-[k-means](http://en.wikipedia.org/wiki/K-means_clustering) and [k-medians](http://en.wikipedia.org/wiki/K-medians_clustering) clustering in Ruby. Uses [NArray](https://github.com/masa16/narray) under the hood for fast calculations.
+[k-means clustering](http://en.wikipedia.org/wiki/K-means_clustering) in Ruby. Uses [NArray](https://github.com/masa16/narray) under the hood for fast calculations.
 
 Jump to the [examples](examples/) directory to see this in action.
 
@@ -76,19 +76,3 @@ option | default | description
 :init   | :kmpp | algorithm for picking initial cluster centroids. Accepts :kmpp, :random, or an array of k centroids
 :scale_data | false | Scales features to -1..1 range
 
-### KMediansClusterer
-
-k-medians clustering is available via ```KMediansClusterer```, which has the same api
-as ```KMeansClusterer```:
-
-```ruby
-kmedians = KMediansClusterer.run k, data, labels: labels, runs: 5
-```
-
-Differences between the two variants:
-
-          | KMeansClusterer | KMediansClusterer
---------- | --------------- | -----------------
-distance measure | Euclidean | Manhattan
-centroid calculation | mean | median
-cost function | sum of squared distances | sum of distances
