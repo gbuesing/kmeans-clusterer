@@ -63,9 +63,9 @@ class TestKMeansClusterer < MiniTest::Test
       [ 1.0, 0.0, 1.0 ]
     ]
 
-    assert_equal expected.length, actual.length
-    assert_equal expected[0], actual[0].to_a
-    assert_equal expected[1], actual[1].to_a
+    assert_equal [3,2], actual.shape
+    assert_equal expected[0], actual[true, 0].to_a
+    assert_equal expected[1], actual[true, 1].to_a
   end
 
 end

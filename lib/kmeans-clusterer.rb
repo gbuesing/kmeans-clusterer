@@ -53,21 +53,13 @@ class KMeansClusterer
   DEFAULT_OPTS = { scale_data: false, runs: 10, log: false, init: :kmpp}
 
   def self.run k, data, opts = {}
-    raise(ArgumentError, "k cannot be greater than the number of points") if k > data.length
-
     opts = DEFAULT_OPTS.merge(opts)
 
-    data = if opts[:scale_data]
-      scale_data data
-    else
-      data.map {|row| NArray.to_na(row).to_f}
-    end
-
-    errors = []
-
-    points_matrix = NMatrix.cast data
+    data = scale_data(data) if opts[:scale_data]
+    points_matrix = NMatrix.cast(data, NArray::DFLOAT)
     opts[:row_norms] = points_matrix.map {|v| v**2}.sum(0)
 
+    errors = []
 
     runs = opts[:runs].times.map do |i|
       km = new(k, points_matrix, opts).run
@@ -84,13 +76,11 @@ class KMeansClusterer
 
   # see scikit-learn scale and _mean_and_std methods
   def self.scale_data data
-    nadata = NArray.to_na(data).to_f
+    nadata = NArray.cast(data, NArray::DFLOAT)
     mean = nadata.mean(1)
     std = nadata.rmsdev(1)
     std[std.eq(0)] = 1.0 # so we don't divide by 0
     nadata = (nadata - mean) / std
-    # convert back to an array, containing NArrays for each row
-    data.length.times.map {|i| nadata[true, i] }
   end
 
 
