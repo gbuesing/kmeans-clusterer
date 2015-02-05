@@ -59,19 +59,15 @@ class KMeansClusterer
     points_matrix = NMatrix.cast(data, NArray::DFLOAT)
     opts[:row_norms] = points_matrix.map {|v| v**2}.sum(0)
 
-    errors = []
-
     runs = opts[:runs].times.map do |i|
       km = new(k, points_matrix, opts).run
-      error = km.error
       if opts[:log]
-        puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{error.round(2)} err"
+        puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{km.error.round(2)} err"
       end
-      errors << error
       km
     end
 
-    runs.sort_by.with_index {|run, i| errors[i] }.first
+    runs.sort_by {|run| run.error }.first
   end
 
   # see scikit-learn scale and _mean_and_std methods
@@ -84,7 +80,7 @@ class KMeansClusterer
   end
 
 
-  attr_reader :k, :points, :clusters, :iterations, :runtime
+  attr_reader :k, :points, :clusters, :error, :iterations, :runtime
 
 
   def initialize k, points_matrix, opts = {}
@@ -143,24 +139,13 @@ class KMeansClusterer
       @cluster_point_ids = Array.new(@k) { [] }
     end
 
+    @error = calculate_error
+
     set_points
     set_clusters
     
     @runtime =  Time.now - start_time
     self
-  end
-
-  def error
-    errors = @clusters.map do |c|
-      if c.points.empty?
-        0
-      else
-        distances = distance c.points_narray, c.centroid.data
-        (distances**2).sum
-      end
-    end
-
-    errors.reduce(:+)
   end
 
   def closest_cluster point = origin
@@ -273,6 +258,22 @@ class KMeansClusterer
         end
         c
       end
+    end
+
+    def calculate_error
+      errors = @k.times.map do |i|
+        point_ids = @cluster_point_ids[i]
+        if point_ids.empty?
+          0
+        else
+          centroid = NArray.cast(@centroids[true, i].flatten)
+          points = NArray.cast @points_matrix[true, point_ids]
+          distances = distance points, centroid
+          (distances**2).sum
+        end
+      end
+
+      errors.reduce(:+)
     end
 
     def distance x, y, yy = @row_norms
