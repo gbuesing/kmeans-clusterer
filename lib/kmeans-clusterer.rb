@@ -67,7 +67,7 @@ class KMeansClusterer
       km
     end
 
-    runs.sort_by {|run| run.error }.first
+    runs.sort_by {|run| run.error }.first.finish
   end
 
   # see scikit-learn scale and _mean_and_std methods
@@ -140,11 +140,13 @@ class KMeansClusterer
     end
 
     @error = calculate_error
+    @runtime =  Time.now - start_time
+    self
+  end
 
+  def finish
     set_points
     set_clusters
-    
-    @runtime =  Time.now - start_time
     self
   end
 
