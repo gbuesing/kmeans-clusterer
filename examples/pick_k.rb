@@ -50,7 +50,7 @@ errors, silhouettes = [], []
 puts "k\tsilhouette\tsse"
 runs = ks.map do |k|
   kmeans = KMeansClusterer.run k, data, runs: 3
-  error, ss = kmeans.error, kmeans.silhouette_score
+  error, ss = kmeans.error, kmeans.silhouette
   errors << error
   silhouettes << ss
   puts "#{k}\t#{ss.round(2)}\t\t#{error.round(1)}"

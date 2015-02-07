@@ -198,7 +198,7 @@ class KMeansClusterer
     wrap_point Array.new(@points[0].dimension, 0) 
   end
 
-  def silhouette_score
+  def silhouette
     return 1.0 if @k < 2
 
     distances = distance(@centroids, @points_matrix)
@@ -217,6 +217,8 @@ class KMeansClusterer
 
     scores.reduce(:+) / scores.length # mean score for all points
   end
+
+  alias_method :silhouette_score, :silhouette
 
   private
     def wrap_point point

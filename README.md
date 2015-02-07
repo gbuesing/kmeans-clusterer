@@ -50,7 +50,7 @@ predicted = kmeans.predict [[41.85,-87.65]] # Chicago
 puts "\nClosest cluster to Chicago: #{predicted[0]}"
 
 # Clustering quality score. Value between -1.0..1.0 (1.0 is best)
-puts "\nSilhouette score: #{kmeans.silhouette_score.round(2)}"
+puts "\nSilhouette score: #{kmeans.silhouette.round(2)}"
 ```
 
 Output of simple example:

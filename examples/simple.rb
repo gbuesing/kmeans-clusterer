@@ -22,7 +22,7 @@ kmeans.clusters.each do |cluster|
 end
 
 puts "\nSSE: #{kmeans.error.round(2)}"
-puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
+puts "Silhouette score: #{kmeans.silhouette.round(2)}"
 
 # puts "\n---\n"
 
@@ -36,7 +36,7 @@ puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
 # end
 
 # puts "\nSSE: #{kmedians.error.round(2)}"
-# puts "Silhouette score: #{kmedians.silhouette_score.round(2)}"
+# puts "Silhouette score: #{kmedians.silhouette.round(2)}"
 
 # Outputs:
 # [3, 3], [3, 4], [4, 3]
@@ -67,7 +67,7 @@ predicted = kmeans.predict [[41.85,-87.65]] # Chicago
 puts "\nClosest cluster to Chicago: #{predicted[0]}"
 
 puts "\nSSE: #{kmeans.error.round(2)}"
-puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
+puts "Silhouette score: #{kmeans.silhouette.round(2)}"
 
 
 

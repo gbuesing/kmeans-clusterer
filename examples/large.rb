@@ -32,4 +32,4 @@ elapsed = Time.now - t
 
 puts "\nBest of #{runs} runs (total time #{elapsed.round(2)}s):"
 puts "#{k} clusters in #{kmeans.iterations} iterations, #{kmeans.runtime.round(2)}s, SSE #{kmeans.error.round(2)}"
-puts "Silhouette score: #{kmeans.silhouette_score.round(2)}"
+puts "Silhouette score: #{kmeans.silhouette.round(2)}"
