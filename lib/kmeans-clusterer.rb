@@ -329,7 +329,8 @@ class KMeansClusterer
 
     def get_points_for_centroid i
       point_ids = @cluster_point_ids[i]
-      NArray.cast @points_matrix[true, point_ids]
+      points = @points_matrix[true, point_ids]
+      points.empty? ? NArray.dfloat(0) : NArray.cast(points)
     end
 
     def distance x, y, yy = @row_norms
