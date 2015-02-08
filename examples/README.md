@@ -14,6 +14,17 @@ The number of clusters can be configured on the command line:
 ![Cities clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/cities_k10.png)
 
 
+Headlines
+---
+
+This example clusters news headlines using a simple word bag extraction of text features. It outputs random samples from each cluster to the terminal.
+
+```./examples/headlines.rb -k 16```
+
+Datset: Qazvinian and radev 2011.
+
+
+
 Pick Best Value for k
 ---
 
