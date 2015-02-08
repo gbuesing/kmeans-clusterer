@@ -1,6 +1,8 @@
 require 'narray'
 
 class KMeansClusterer
+  TYPECODE = { double: NArray::DFLOAT, single: NArray::SFLOAT }
+
   module Scaler
     def self.mean data
       data.mean(1)
@@ -12,8 +14,8 @@ class KMeansClusterer
       std
     end
 
-    def self.scale data, mean = nil, std = nil
-      data = NArray.cast(data, NArray::DFLOAT)
+    def self.scale data, mean = nil, std = nil, typecode = nil
+      data = NArray.cast(data, typecode)
       mean ||= self.mean(data)
       std ||= self.std(data)
       data = (data - mean) / std
@@ -64,27 +66,24 @@ class KMeansClusterer
       point.cluster = self
       @points << point
     end
-
-    def points_narray
-      NArray.cast @points.map(&:data)
-    end
   end
 
 
-  DEFAULT_OPTS = { scale_data: false, runs: 10, log: false, init: :kmpp}
+  DEFAULT_OPTS = { scale_data: false, runs: 10, log: false, init: :kmpp, float_precision: :double }
 
   def self.run k, data, opts = {}
     opts = DEFAULT_OPTS.merge(opts)
 
     opts[:k] = k
+    opts[:typecode] = TYPECODE[opts[:float_precision]]
 
     if opts[:scale_data]
-      data, mean, std = Scaler.scale(data)
+      data, mean, std = Scaler.scale(data, nil, nil, opts[:typecode])
       opts[:mean] = mean
       opts[:std] = std
     end
 
-    opts[:points_matrix] = NMatrix.cast(data, NArray::DFLOAT)
+    opts[:points_matrix] = NMatrix.cast(data, opts[:typecode])
     opts[:row_norms] = opts[:points_matrix].map {|v| v**2}.sum(0)
 
     bestrun = nil
@@ -119,6 +118,7 @@ class KMeansClusterer
     @mean = opts[:mean]
     @std = opts[:std]
     @scale_data = opts[:scale_data]
+    @typecode = opts[:typecode]
 
     init_centroids
   end
@@ -144,7 +144,7 @@ class KMeansClusterer
       updated_centroids = []
 
       @k.times do |i|
-        centroid = NArray.cast(@centroids[true, i].flatten)
+        centroid = NArray.cast(@centroids[true, i].flatten, @typecode)
         point_ids = @cluster_point_ids[i]
 
         if point_ids.empty?
@@ -159,7 +159,7 @@ class KMeansClusterer
         updated_centroids << newcenter
       end
 
-      @centroids = NMatrix.cast updated_centroids
+      @centroids = NMatrix.cast updated_centroids, @typecode
 
       break if moves.max < 0.001 # i.e., no movement
       break if @iterations >= 300
@@ -179,8 +179,8 @@ class KMeansClusterer
   end
 
   def predict data
-    data, _m, _s = Scaler.scale(data, @mean, @std) if @scale_data
-    data = NMatrix.cast(data, NArray::DFLOAT)
+    data, _m, _s = Scaler.scale(data, @mean, @std, @typecode) if @scale_data
+    data = NMatrix.cast(data, @typecode)
     distances = distance(@centroids, data, nil)
     data.shape[1].times.map do |i|
       distances[i, true].sort_index[0] # index of closest cluster
@@ -223,7 +223,7 @@ class KMeansClusterer
   private
     def wrap_point point
       return point if point.is_a?(Point)
-      Point.new(0, NArray.to_na(point).to_f)
+      Point.new(0, NArray.cast(point, @typecode))
     end
 
     def dissimilarity points, point
@@ -259,7 +259,7 @@ class KMeansClusterer
           d2 << min_distance**2
         end
 
-        d2 = NArray.to_na d2
+        d2 = NArray.cast(d2, @typecode)
         probs = d2 / d2.sum
         cumprobs = probs.cumsum
         r = rand
@@ -271,7 +271,7 @@ class KMeansClusterer
     end
 
     def custom_centroid_init
-      @centroids = NMatrix.cast @init
+      @centroids = NMatrix.cast @init, @typecode
       @k = @init.length
     end
 
@@ -289,14 +289,14 @@ class KMeansClusterer
 
     def set_points
       @points = @points_count.times.map do |i|
-        data = NArray.cast @points_matrix[true, i].flatten
+        data = NArray.cast @points_matrix[true, i].flatten, @typecode
         Point.new(i, data, @labels[i])
       end
     end
 
     def set_clusters
       @clusters = @k.times.map do |i|
-        centroid = NArray.cast @centroids[true, i].flatten
+        centroid = NArray.cast @centroids[true, i].flatten, @typecode
         c = Cluster.new i, Point.new(-i, centroid)
         @cluster_point_ids[i].each do |p|
           c << @points[p]
@@ -322,17 +322,17 @@ class KMeansClusterer
     end
 
     def get_point i
-      NArray.cast @points_matrix[true, i].flatten
+      NArray.cast @points_matrix[true, i].flatten, @typecode
     end
 
     def get_centroid i
-      NArray.cast(@centroids[true, i].flatten)
+      NArray.cast(@centroids[true, i].flatten, @typecode)
     end
 
     def get_points_for_centroid i
       point_ids = @cluster_point_ids[i]
       points = @points_matrix[true, point_ids]
-      points.empty? ? NArray.dfloat(0) : NArray.cast(points)
+      points.empty? ? NArray.sfloat(0) : NArray.cast(points, @typecode)
     end
 
     def distance x, y, yy = @row_norms
