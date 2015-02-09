@@ -295,14 +295,14 @@ class KMeansClusterer
 
     def set_points
       @points = @points_count.times.map do |i|
-        data = NArray.cast @points_matrix[true, i].flatten, @typecode
+        data = NArray.ref @points_matrix[true, i].flatten
         Point.new(i, data, @labels[i])
       end
     end
 
     def set_clusters
       @clusters = @k.times.map do |i|
-        centroid = NArray.cast @centroids[true, i].flatten, @typecode
+        centroid = NArray.ref @centroids[true, i].flatten
         c = Cluster.new i, Point.new(-i, centroid)
         @cluster_point_ids[i].each do |p|
           c << @points[p]
@@ -328,17 +328,17 @@ class KMeansClusterer
     end
 
     def get_point i
-      NArray.cast @points_matrix[true, i].flatten, @typecode
+      NArray.ref @points_matrix[true, i].flatten
     end
 
     def get_centroid i
-      NArray.cast(@centroids[true, i].flatten, @typecode)
+      NArray.ref(@centroids[true, i].flatten)
     end
 
     def get_points_for_centroid i
       point_ids = @cluster_point_ids[i]
       points = @points_matrix[true, point_ids]
-      points.empty? ? NArray.sfloat(0) : NArray.cast(points, @typecode)
+      points.empty? ? NArray.sfloat(0) : NArray.ref(points)
     end
 
     def distance x, y, yy = @row_norms
