@@ -220,6 +220,10 @@ class KMeansClusterer
 
   alias_method :silhouette_score, :silhouette
 
+  def inspect
+    %{#<#{self.class.name} k:#{@k} iterations:#{@iterations} error:#{@error} runtime:#{@runtime}>}
+  end
+
   private
     def wrap_point point
       return point if point.is_a?(Point)
