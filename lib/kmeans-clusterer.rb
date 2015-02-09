@@ -146,7 +146,7 @@ class KMeansClusterer
       updated_centroids = []
 
       @k.times do |i|
-        centroid = NArray.cast(@centroids[true, i].flatten, @typecode)
+        centroid = NArray.ref(@centroids[true, i].flatten)
         point_ids = @cluster_point_ids[i]
 
         if point_ids.empty?
@@ -181,8 +181,8 @@ class KMeansClusterer
   end
 
   def predict data
-    data, _m, _s = Scaler.scale(data, @mean, @std, @typecode) if @scale_data
     data = NMatrix.cast(data, @typecode)
+    data, _m, _s = Scaler.scale(data, @mean, @std, @typecode) if @scale_data
     distances = distance(@centroids, data, nil)
     data.shape[1].times.map do |i|
       distances[i, true].sort_index[0] # index of closest cluster
