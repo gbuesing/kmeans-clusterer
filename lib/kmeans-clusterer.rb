@@ -15,11 +15,11 @@ class KMeansClusterer
     end
 
     def self.scale data, mean = nil, std = nil, typecode = nil
-      data = NArray.cast(data, typecode)
+      data = NArray.ref(data)
       mean ||= self.mean(data)
       std ||= self.std(data)
       data = (data - mean) / std
-      [data, mean, std]
+      [NMatrix.ref(data), mean, std]
     end
   end
 
@@ -77,13 +77,15 @@ class KMeansClusterer
     opts[:k] = k
     opts[:typecode] = TYPECODE[opts[:float_precision]]
 
+    data = NMatrix.cast data, opts[:typecode]
+
     if opts[:scale_data]
       data, mean, std = Scaler.scale(data, nil, nil, opts[:typecode])
       opts[:mean] = mean
       opts[:std] = std
     end
 
-    opts[:points_matrix] = NMatrix.cast(data, opts[:typecode])
+    opts[:points_matrix] = data
     opts[:row_norms] = opts[:points_matrix].map {|v| v**2}.sum(0)
 
     bestrun = nil
