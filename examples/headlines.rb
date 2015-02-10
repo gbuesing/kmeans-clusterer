@@ -38,7 +38,10 @@ datafiles.each_with_index do |filename, i|
   end
 end
 
-puts "\nClassifying #{docs.length} docs with #{bag.total_features} total features into #{k} clusters:\n"
+# bag.tf_idf!
+bag.binary!
+
+puts "\nClassifying #{docs.length} docs with #{bag.terms_count} unique terms into #{k} clusters:\n"
 
 
 start = Time.now

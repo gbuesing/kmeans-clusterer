@@ -1,34 +1,36 @@
-require 'rubygems'
-require 'bundler/setup'
 require 'stopwords'
 require 'fast_stemmer'
 
 class Bag
-  attr_reader :dict, :sparse_hashes
+  attr_reader :term_index, :doc_hashes, :doc_count, :doc_frequency
 
   def initialize
     @index = 0
-    @dict = Hash.new do |hsh, key|
+    @doc_count = 0
+    @term_index = Hash.new do |hsh, key|
       val = hsh[key] = @index
       @index += 1
       val
     end
+    @doc_frequency = Hash.new(0)
     @stopwords = Stopwords::Snowball::Filter.new "en"
-    @sparse_hashes = []
+    @doc_hashes = []
   end
 
-  def total_features
+  def terms_count
     @index
   end
 
   def << doc
-    words = doc_words doc
-    doc_hash = create_doc_hash words
-    @sparse_hashes << doc_hash
+    @doc_count += 1
+    terms = extract_terms doc
+    doc_hash = create_doc_hash terms
+    update_doc_frequency doc_hash
+    @doc_hashes << doc_hash
   end
 
   def to_a
-    @sparse_hashes.map do |doc_hash|
+    @doc_hashes.map do |doc_hash|
       vec = Array.new(@index, 0)
       doc_hash.each do |k, v|
         vec[k] = v
@@ -37,22 +39,48 @@ class Bag
     end
   end
 
+  def binary!
+    @doc_hashes.each do |doc_hash|
+      doc_hash.each_key do |k|
+        doc_hash[k] = 1
+      end
+    end
+  end
+
+  def tf_idf!
+    @doc_hashes.each do |doc_hash|
+      max_tf = doc_hash.values.max
+
+      doc_hash.each do |k, v|
+        tf = 0.5 + (0.5 * v) / max_tf.to_f
+        idf = Math.log (@doc_count / @doc_frequency[k].to_f)
+        tf_idf = tf * idf
+        doc_hash[k] = tf_idf
+      end
+    end
+  end
+
   private
 
-    def doc_words doc
-      words = doc.downcase.strip.squeeze(' ').split(/\W+/)
-      words = @stopwords.filter words
-      words.map! {|w| w.stem}
-      words.reject! {|w| w.length < 3}
-      words
+    def extract_terms doc
+      terms = doc.downcase.gsub(/(\d|\s|\W)+/, ' ').strip.split(/\s/)
+      terms.reject! {|t| t.length < 3}
+      terms = @stopwords.filter terms
+      terms.map! {|t| t.stem}
+      terms
     end
 
-    def create_doc_hash words
-      out = words.inject(Hash.new(0)) do |hsh, w| 
-        index = @dict[w]
+    def create_doc_hash terms
+      out = terms.inject(Hash.new(0)) do |hsh, term| 
+        index = @term_index[term]
         hsh[index] +=1
         hsh
       end
-      out.freeze
+    end
+
+    def update_doc_frequency doc_hash
+      doc_hash.each_key do |k|
+        @doc_frequency[k] += 1
+      end
     end
 end
