@@ -1,7 +1,7 @@
 require 'stopwords'
 require 'fast_stemmer'
 
-class Bag
+class BagOfWords
   attr_reader :term_index, :doc_hashes, :doc_count, :doc_frequency
 
   DEFAULT_OPTS = {
@@ -37,38 +37,37 @@ class Bag
   def add_doc doc
     @doc_count += 1
     terms = extract_terms doc
-    doc_hash = create_doc_hash terms
+    doc_hash = create_raw_doc_hash terms
+    update_doc_hash_tf(doc_hash) unless @opts[:tf] == :raw
     update_doc_frequency doc_hash
     @doc_hashes << doc_hash
   end
 
   def to_a
-    weight_tf_values!
+    apply_idf_weighting! unless @idf_weighting_applied
 
     @doc_hashes.map do |doc_hash|
       vec = Array.new(@index, 0)
+
       doc_hash.each do |k, v|
         vec[k] = v
       end
+
       vec
     end
   end
 
   private
 
-    def weight_tf_values!
-      return if [:raw, :binary].include?(@opts[:tf]) && !@opts[:idf]
-
+    def apply_idf_weighting!
       @doc_hashes.each do |doc_hash|
         doc_hash.each do |k, v|
-          tf = calculate_tf v, doc_hash
-          if @opts[:idf]
-            idf = calculate_idf k
-            tf *= idf
-          end
-          doc_hash[k] = tf
+          idf = calculate_idf k
+          doc_hash[k] = v * idf
         end
       end
+
+      @idf_weighting_applied = true
     end
 
     def extract_terms doc
@@ -79,8 +78,7 @@ class Bag
       terms
     end
 
-    def create_doc_hash terms
-      terms.uniq! if @opts[:tf] == :binary
+    def create_raw_doc_hash terms
       out = terms.inject(Hash.new(0)) do |hsh, term| 
         index = @term_index[term]
         hsh[index] +=1
@@ -88,23 +86,28 @@ class Bag
       end
     end
 
-    def update_doc_frequency doc_hash
-      doc_hash.each_key do |k|
-        @doc_frequency[k] += 1
+    def update_doc_hash_tf doc_hash
+      max = doc_hash.values.max if @opts[:tf] == :augmented
+
+      doc_hash.each do |k, v|
+        doc_hash[k] = calculate_tf(v, max)
       end
     end
 
-    def calculate_tf raw_tf, doc_hash
+    def calculate_tf tf, max
       case @opts[:tf]
-      when :log
-        1 + Math.log(raw_tf)
-      when :augmented
-        max_tf = doc_hash.values.max
-        0.5 + (0.5 * raw_tf) / max_tf.to_f
       when :binary
         1
-      else
-        raw_tf
+      when :log
+        1 + Math.log(tf)
+      when :augmented
+        0.5 + (0.5 * tf) / max.to_f
+      end 
+    end
+
+    def update_doc_frequency doc_hash
+      doc_hash.each_key do |k|
+        @doc_frequency[k] += 1
       end
     end
 
