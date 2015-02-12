@@ -5,7 +5,7 @@ class BagOfWords
   attr_reader :term_index, :doc_hashes, :doc_count, :doc_frequency
 
   DEFAULT_OPTS = {
-    tf: :raw,
+    # tf: :raw,
     idf: false,
     stopwords: :en,
     stem: true,
@@ -38,7 +38,8 @@ class BagOfWords
     @doc_count += 1
     terms = extract_terms doc
     doc_hash = create_raw_doc_hash terms
-    update_doc_hash_tf(doc_hash) unless @opts[:tf] == :raw
+    normalize_tf doc_hash
+    # update_doc_hash_tf(doc_hash) unless @opts[:tf] == :raw
     update_doc_frequency doc_hash
     @doc_hashes << doc_hash
   end
@@ -86,24 +87,31 @@ class BagOfWords
       end
     end
 
-    def update_doc_hash_tf doc_hash
-      max = doc_hash.values.max if @opts[:tf] == :augmented
-
+    def normalize_tf doc_hash
+      norm = Math.sqrt doc_hash.values.map {|v| v**2}.reduce(:+)
       doc_hash.each do |k, v|
-        doc_hash[k] = calculate_tf(v, max)
+        doc_hash[k] = v / norm
       end
     end
 
-    def calculate_tf tf, max
-      case @opts[:tf]
-      when :binary
-        1
-      when :log
-        1 + Math.log(tf)
-      when :augmented
-        0.5 + (0.5 * tf) / max.to_f
-      end 
-    end
+    # def update_doc_hash_tf doc_hash
+    #   max = doc_hash.values.max if @opts[:tf] == :augmented
+
+    #   doc_hash.each do |k, v|
+    #     doc_hash[k] = calculate_tf(v, max)
+    #   end
+    # end
+
+    # def calculate_tf tf, max
+    #   case @opts[:tf]
+    #   when :binary
+    #     1
+    #   when :log
+    #     1 + Math.log(tf)
+    #   when :augmented
+    #     0.5 + (0.5 * tf) / max.to_f
+    #   end 
+    # end
 
     def update_doc_frequency doc_hash
       doc_hash.each_key do |k|

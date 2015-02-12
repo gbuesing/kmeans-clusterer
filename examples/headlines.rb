@@ -27,7 +27,7 @@ get_basename = -> (docid) {
   basenames[fileid]
 }
 
-bag = BagOfWords.new tf: :raw, idf: false
+bag = BagOfWords.new idf: true
 
 datafiles.each_with_index do |filename, i|
   File.open(filename).each do |line|
