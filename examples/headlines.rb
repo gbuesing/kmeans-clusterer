@@ -27,19 +27,16 @@ get_basename = -> (docid) {
   basenames[fileid]
 }
 
-bag = Bag.new
+bag = Bag.new tf: :binary, idf: false
 
 datafiles.each_with_index do |filename, i|
   File.open(filename).each do |line|
     doc = line.chomp.to_s
-    bag << doc
+    bag.add_doc doc
     docs << doc
     doc_fileids << i
   end
 end
-
-# bag.tf_idf!
-bag.binary!
 
 puts "\nClassifying #{docs.length} docs with #{bag.terms_count} unique terms into #{k} clusters:\n"
 
