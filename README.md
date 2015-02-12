@@ -74,6 +74,6 @@ option | default | description
 :runs   | 10 | number of times to run kmeans
 :log    | false | print stats after each run
 :init   | :kmpp | algorithm for picking initial cluster centroids. Accepts :kmpp, :random, or an array of k centroids
-:scale_data | false | Scales features to -1..1 range
+:scale_data | false | Scales features before clustering using formula (data - mean) / std
 :float_precision | :double | float precision to use. :double or :single
 
