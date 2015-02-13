@@ -77,7 +77,9 @@ class KMeansClusterer
     opts[:k] = k
     opts[:typecode] = TYPECODE[opts[:float_precision]]
 
-    data = NMatrix.cast data, opts[:typecode]
+    unless data.is_a?(NMatrix)
+      data = NMatrix.cast data, opts[:typecode]
+    end
 
     if opts[:scale_data]
       data, mean, std = Scaler.scale(data, nil, nil, opts[:typecode])

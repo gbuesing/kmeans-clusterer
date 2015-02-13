@@ -1,5 +1,7 @@
 require 'stopwords'
 require 'fast_stemmer'
+require 'narray'
+
 
 class BagOfWords
   attr_reader :term_index, :doc_hashes, :doc_count, :doc_frequency
@@ -45,7 +47,7 @@ class BagOfWords
   end
 
   def to_a
-    apply_idf_weighting! unless @idf_weighting_applied
+    apply_idf_weighting! if @opts[:idf] && !@idf_weighting_applied
 
     @doc_hashes.map do |doc_hash|
       vec = Array.new(@index, 0)
@@ -56,6 +58,21 @@ class BagOfWords
 
       vec
     end
+  end
+
+  def to_matrix float_precision = :double
+    apply_idf_weighting! if @opts[:idf] && !@idf_weighting_applied
+
+    typecode = { double: NArray::DFLOAT, single: NArray::SFLOAT }[float_precision]
+    matrix = NMatrix.new(typecode, terms_count, doc_count)
+
+    @doc_hashes.each_with_index do |doc_hash, i|
+      doc_hash.each do |k, v|
+        matrix[k, i] = v
+      end
+    end
+
+    matrix
   end
 
   private

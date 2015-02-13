@@ -39,10 +39,10 @@ datafiles.each_with_index do |filename, i|
 end
 
 puts "\nClassifying #{docs.length} docs with #{bag.terms_count} unique terms into #{k} clusters:\n"
-
+data = bag.to_matrix
 
 start = Time.now
-kmeans = KMeansClusterer.run(k, bag.to_a, runs: runs, log: true)
+kmeans = KMeansClusterer.run(k, data, runs: runs, log: true)
 elapsed = Time.now - start
 
 kmeans.clusters.each do |cluster|
