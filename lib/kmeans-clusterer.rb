@@ -124,7 +124,7 @@ class KMeansClusterer
   end
 
 
-  attr_reader :k, :points, :clusters, :error, :mean, :std, :iterations, :runtime
+  attr_reader :k, :points, :clusters, :centroids, :error, :mean, :std, :iterations, :runtime
 
 
   def initialize opts = {}
