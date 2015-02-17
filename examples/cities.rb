@@ -27,7 +27,7 @@ elapsed = Time.now - t
 
 kmeans.sorted_clusters.each do |cluster|
   puts "\n#---\n\n"
-  cluster.points.each do |point|
+  cluster.sorted_points.each do |point|
     city = point.label
     puts "#{city[:state]} #{city[:name]}"
   end

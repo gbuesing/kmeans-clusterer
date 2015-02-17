@@ -82,6 +82,14 @@ class KMeansClusterer
       point.cluster = self
       @points << point
     end
+
+    def sorted_points point = @centroid
+      point = point.data if point.is_a?(Point)
+      point = NArray.cast(point, @centroid.typecode) unless point.is_a?(NArray)
+      points_data = NArray.cast(@points.map(&:data))
+      distances = Distance.euclidean(points_data, point)
+      @points.sort_by.with_index {|p, i| distances[i] }
+    end
   end
 
 
