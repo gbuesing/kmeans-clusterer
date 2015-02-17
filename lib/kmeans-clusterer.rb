@@ -208,14 +208,9 @@ class KMeansClusterer
   end
 
   def sorted_clusters point = origin
-    point = wrap_point point
-    centroids = get_cluster_centroids
-    distances = Distance.euclidean(centroids, point.data)
+    data = point.is_a?(Point) ? point.data : NArray.cast(point, @typecode)
+    distances = Distance.euclidean(NArray.ref(@centroids), data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
-  end
-
-  def origin
-    wrap_point Array.new(@points[0].dimension, 0) 
   end
 
   def silhouette
@@ -307,10 +302,6 @@ class KMeansClusterer
       @points_count.times.to_a.shuffle.slice(0, @k)
     end
 
-    def get_cluster_centroids
-      NArray.to_na @clusters.map {|c| c.centroid.data }
-    end
-
     def set_points
       @points = @points_count.times.map do |i|
         data = NArray.ref @points_matrix[true, i].flatten
@@ -357,5 +348,9 @@ class KMeansClusterer
       point_ids = @cluster_point_ids[i]
       points = @points_matrix[true, point_ids]
       points.empty? ? NArray.sfloat(0) : NArray.ref(points)
+    end
+
+    def origin
+      wrap_point Array.new(@points[0].dimension, 0) 
     end
 end
