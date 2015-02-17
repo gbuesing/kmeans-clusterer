@@ -23,6 +23,22 @@ class KMeansClusterer
     end
   end
 
+  module Distance
+    def self.euclidean x, y, yy = nil
+      if x.is_a?(NMatrix) && y.is_a?(NMatrix)
+        xx = x.map {|v| v**2}.sum(0)
+        yy ||= y.map {|v| v**2}.sum(0)
+        xy = x * y.transpose
+        distance = xy * -2
+        distance += xx
+        distance += yy.transpose
+        NMath.sqrt distance
+      else
+        NMath.sqrt ((x - y)**2).sum(0)
+      end
+    end
+  end
+
 
   class Point
     attr_reader :id, :data
@@ -136,7 +152,7 @@ class KMeansClusterer
     loop do
       @iterations +=1
 
-      distances = distance(@centroids, @points_matrix)
+      distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
 
       # assign point ids to @cluster_point_ids
       @points_count.times do |i|
@@ -157,7 +173,7 @@ class KMeansClusterer
         else
           points = @points_matrix[true, point_ids]
           newcenter = points.mean(1)
-          moves << distance(centroid, newcenter)
+          moves << Distance.euclidean(centroid, newcenter)
         end
 
         updated_centroids << newcenter
@@ -185,7 +201,7 @@ class KMeansClusterer
   def predict data
     data = NMatrix.cast(data, @typecode)
     data, _m, _s = Scaler.scale(data, @mean, @std, @typecode) if @scale_data
-    distances = distance(@centroids, data, nil)
+    distances = Distance.euclidean(@centroids, data)
     data.shape[1].times.map do |i|
       distances[i, true].sort_index[0] # index of closest cluster
     end
@@ -194,7 +210,7 @@ class KMeansClusterer
   def sorted_clusters point = origin
     point = wrap_point point
     centroids = get_cluster_centroids
-    distances = distance(centroids, point.data)
+    distances = Distance.euclidean(centroids, point.data)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
@@ -205,7 +221,7 @@ class KMeansClusterer
   def silhouette
     return 1.0 if @k < 2
 
-    distances = distance(@centroids, @points_matrix)
+    distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
 
     scores = @points_count.times.map do |i|
       point = get_point i
@@ -235,7 +251,7 @@ class KMeansClusterer
     end
 
     def dissimilarity points, point
-      distances = distance points, point
+      distances = Distance.euclidean points, point
       distances.sum / distances.length.to_f
     end
 
@@ -259,7 +275,7 @@ class KMeansClusterer
       while centroid_ids.length < @k
         centroids = @points_matrix[true, centroid_ids]
 
-        distances = distance(centroids, @points_matrix)
+        distances = Distance.euclidean(centroids, @points_matrix, @row_norms)
 
         d2 = []
         @points_count.times do |i|
@@ -321,7 +337,7 @@ class KMeansClusterer
         if points.empty?
           0
         else
-          distances = distance points, centroid
+          distances = Distance.euclidean points, centroid
           (distances**2).sum
         end
       end
@@ -341,19 +357,5 @@ class KMeansClusterer
       point_ids = @cluster_point_ids[i]
       points = @points_matrix[true, point_ids]
       points.empty? ? NArray.sfloat(0) : NArray.ref(points)
-    end
-
-    def distance x, y, yy = @row_norms
-      if x.is_a?(NMatrix) && y.is_a?(NMatrix)
-        xx = x.map {|v| v**2}.sum(0)
-        yy ||= y.map {|v| v**2}.sum(0)
-        xy = x * y.transpose
-        distance = xy * -2
-        distance += xx
-        distance += yy.transpose
-        NMath.sqrt distance
-      else
-        NMath.sqrt ((x - y)**2).sum(0)
-      end
     end
 end
