@@ -241,8 +241,6 @@ class KMeansClusterer
     scores.reduce(:+) / scores.length # mean score for all points
   end
 
-  alias_method :silhouette_score, :silhouette
-
   def inspect
     %{#<#{self.class.name} k:#{@k} iterations:#{@iterations} error:#{@error} runtime:#{@runtime}>}
   end
@@ -307,7 +305,7 @@ class KMeansClusterer
     end
 
     def pick_k_random_indexes
-      @points_count.times.to_a.shuffle.slice(0, @k)
+      @points_count.times.to_a.sample @k
     end
 
     def set_points
