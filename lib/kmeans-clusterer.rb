@@ -216,8 +216,9 @@ class KMeansClusterer
   end
 
   def sorted_clusters point = origin
-    data = point.is_a?(Point) ? point.data : NArray.cast(point, @typecode)
-    distances = Distance.euclidean(NArray.ref(@centroids), data)
+    point = point.data if point.is_a?(Point)
+    point = NArray.cast(point, @typecode) unless point.is_a?(NArray)
+    distances = Distance.euclidean(NArray.ref(@centroids), point)
     @clusters.sort_by.with_index {|c, i| distances[i] }
   end
 
@@ -246,10 +247,6 @@ class KMeansClusterer
   end
 
   private
-    def wrap_point point
-      return point if point.is_a?(Point)
-      Point.new(0, NArray.cast(point, @typecode))
-    end
 
     def dissimilarity points, point
       distances = Distance.euclidean points, point
@@ -357,6 +354,6 @@ class KMeansClusterer
     end
 
     def origin
-      wrap_point Array.new(@points[0].dimension, 0) 
+      Array.new(@points[0].dimension, 0) 
     end
 end

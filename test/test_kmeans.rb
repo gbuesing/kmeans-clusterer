@@ -23,7 +23,7 @@ class TestKMeansClusterer < MiniTest::Test
     end
 
     assert_in_delta 8.0, kmeans.error
-    assert_in_delta 0.873, kmeans.silhouette_score
+    assert_in_delta 0.873, kmeans.silhouette
   end
 
   def test_distance_calculation
