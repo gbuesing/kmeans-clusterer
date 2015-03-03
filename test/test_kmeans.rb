@@ -56,16 +56,27 @@ class TestKMeansClusterer < MiniTest::Test
     actual, mean, std = KMeansClusterer::Scaler.scale NMatrix.cast(input, NArray::DFLOAT)
 
     expected = [
-      [ -1.0, 0.0, -1.0 ],
-      [ 1.0, 0.0, 1.0 ]
+      [ -0.7071, 0.0, -0.7071 ],
+      [ 0.7071, 0.0, 0.7071 ]
     ]
 
     assert_equal [3,2], actual.shape
-    assert_equal [expected[0]], actual[true, 0].to_a
-    assert_equal [expected[1]], actual[true, 1].to_a
+
+    actual[true, 0].to_a.flatten.each_with_index do |val, i|
+      assert_in_delta expected[0][i], val
+    end
+
+    actual[true, 1].to_a.flatten.each_with_index do |val, i|
+      assert_in_delta expected[1][i], val
+    end
 
     assert_equal [5.5, 5.0, 107.5], mean.to_a
-    assert_equal [4.5, 1.0, 97.5], std.to_a
+
+    expected_std = [6.36396, 1.0, 137.88582]
+
+    std.to_a.flatten.each_with_index do |val, i|
+      assert_in_delta expected_std[i], val
+    end
   end
 
 

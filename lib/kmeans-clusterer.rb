@@ -9,7 +9,7 @@ class KMeansClusterer
     end
 
     def self.std data
-      std = data.rmsdev(1)
+      std = data.stddev(1)
       std[std.eq(0)] = 1.0 # so we don't divide by 0
       std
     end
