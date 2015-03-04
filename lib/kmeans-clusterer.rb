@@ -21,13 +21,18 @@ class KMeansClusterer
       data = (data - mean) / std
       [NMatrix.ref(data), mean, std]
     end
+
+    def self.row_norms data
+      squared_data = NArray.ref(data)**2
+      NMatrix.ref(squared_data).sum(0)
+    end
   end
 
   module Distance
     def self.euclidean x, y, yy = nil
       if x.is_a?(NMatrix) && y.is_a?(NMatrix)
-        xx = x.map {|v| v**2}.sum(0)
-        yy ||= y.map {|v| v**2}.sum(0)
+        xx = Scaler.row_norms(x)
+        yy ||= Scaler.row_norms(y)
         xy = x * y.transpose
         distance = xy * -2
         distance += xx
@@ -112,7 +117,7 @@ class KMeansClusterer
     end
 
     opts[:points_matrix] = data
-    opts[:row_norms] = opts[:points_matrix].map {|v| v**2}.sum(0)
+    opts[:row_norms] = Scaler.row_norms(data)
 
     bestrun = nil
 
