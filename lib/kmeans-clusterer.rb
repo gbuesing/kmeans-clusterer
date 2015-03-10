@@ -159,6 +159,7 @@ class KMeansClusterer
   def run 
     start_time = Time.now
     @iterations, @runtime = 0, 0
+    min_distances = nil
 
     loop do
       @iterations +=1
@@ -199,7 +200,7 @@ class KMeansClusterer
       break if @iterations >= 300
     end
 
-    @error = calculate_error
+    @error = (min_distances**2).sum
     @runtime =  Time.now - start_time
     self
   end
@@ -326,22 +327,6 @@ class KMeansClusterer
         end
         c
       end
-    end
-
-    def calculate_error
-      errors = @k.times.map do |i|
-        centroid = get_centroid i
-        points = get_points_for_centroid i
-
-        if points.empty?
-          0
-        else
-          distances = Distance.euclidean points, centroid
-          (distances**2).sum
-        end
-      end
-
-      errors.reduce(:+)
     end
 
     def get_point i
