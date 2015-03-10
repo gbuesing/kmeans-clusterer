@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'kmeans-clusterer'
-  s.version     = '0.9.0'
-  s.date        = '2015-03-03'
+  s.version     = '0.10.0'
+  s.date        = '2015-03-10'
   s.summary     = "k-means clustering"
   s.description = "k-means clustering. Uses NArray for fast calculations."
   s.authors     = ["Geoff Buesing"]

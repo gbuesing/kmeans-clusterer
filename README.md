@@ -18,7 +18,9 @@ Features
 
 Install
 ---
-```gem install kmeans-clusterer```
+```
+gem install kmeans-clusterer
+```
 
 
 Usage
@@ -76,5 +78,5 @@ option | default | description
 :init   | :kmpp | algorithm for picking initial cluster centroids. Accepts :kmpp, :random, or an array of k centroids
 :scale_data | false | Scales features before clustering using formula (data - mean) / std
 :float_precision | :double | float precision to use. :double or :single
-:max_iter | 300 | Maximum iterations per run
+:max_iter | 300 | Max iterations per run
 
