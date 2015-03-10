@@ -98,7 +98,7 @@ class KMeansClusterer
   end
 
 
-  DEFAULT_OPTS = { scale_data: false, runs: 10, log: false, init: :kmpp, float_precision: :double }
+  DEFAULT_OPTS = { scale_data: false, runs: 10, log: false, init: :kmpp, float_precision: :double, max_iter: 300 }
 
   def self.run k, data, opts = {}
     opts = DEFAULT_OPTS.merge(opts)
@@ -152,6 +152,7 @@ class KMeansClusterer
     @std = opts[:std]
     @scale_data = opts[:scale_data]
     @typecode = opts[:typecode]
+    @max_iter = opts[:max_iter]
 
     init_centroids
   end
@@ -191,7 +192,7 @@ class KMeansClusterer
       end
 
       break if max_move < 0.001 # i.e., no movement
-      break if @iterations >= 300
+      break if @iterations >= @max_iter
     end
 
     @error = (min_distances**2).sum
