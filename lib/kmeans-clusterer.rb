@@ -175,23 +175,22 @@ class KMeansClusterer
         min_distances[mask] = dist[mask]
       end
 
-      moves = []
+      max_move = 0
 
       @k.times do |cluster_id|
         centroid = NArray.ref(@centroids[true, cluster_id].flatten)
         point_ids = @cluster_assigns.eq(cluster_id).where
 
-        if point_ids.empty?
-          moves << 0
-        else
+        unless point_ids.empty?
           points = @points_matrix[true, point_ids]
           newcenter = points.mean(1)
+          move = Distance.euclidean(centroid, newcenter)
+          max_move = move if move > max_move
           @centroids[true, cluster_id] = newcenter
-          moves << Distance.euclidean(centroid, newcenter)
         end
       end
 
-      break if moves.max < 0.001 # i.e., no movement
+      break if max_move < 0.001 # i.e., no movement
       break if @iterations >= 300
     end
 
