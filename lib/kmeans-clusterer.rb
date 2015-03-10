@@ -164,7 +164,7 @@ class KMeansClusterer
 
     loop do
       @iterations +=1
-      
+
       min_distances.fill! Float::INFINITY
       distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
 
@@ -176,25 +176,20 @@ class KMeansClusterer
       end
 
       moves = []
-      updated_centroids = []
 
       @k.times do |cluster_id|
         centroid = NArray.ref(@centroids[true, cluster_id].flatten)
         point_ids = @cluster_assigns.eq(cluster_id).where
 
         if point_ids.empty?
-          newcenter = centroid
           moves << 0
         else
           points = @points_matrix[true, point_ids]
           newcenter = points.mean(1)
+          @centroids[true, cluster_id] = newcenter
           moves << Distance.euclidean(centroid, newcenter)
         end
-
-        updated_centroids << newcenter
       end
-
-      @centroids = NMatrix.cast updated_centroids, @typecode
 
       break if moves.max < 0.001 # i.e., no movement
       break if @iterations >= 300
