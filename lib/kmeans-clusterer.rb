@@ -206,8 +206,19 @@ class KMeansClusterer
   end
 
   def finish
-    set_points
-    set_clusters
+    @clusters = @k.times.map do |i|
+      centroid = NArray.ref @centroids[true, i].flatten
+      Cluster.new i, Point.new(-i, centroid)
+    end
+
+    @points = @points_count.times.map do |i|
+      data = NArray.ref @points_matrix[true, i].flatten
+      point = Point.new(i, data, @labels[i])
+      cluster = @clusters[@cluster_assigns[i]]
+      cluster.points << point
+      point
+    end
+
     self
   end
 
@@ -308,25 +319,6 @@ class KMeansClusterer
 
     def pick_k_random_indexes
       @points_count.times.to_a.sample @k
-    end
-
-    def set_points
-      @points = @points_count.times.map do |i|
-        data = NArray.ref @points_matrix[true, i].flatten
-        Point.new(i, data, @labels[i])
-      end
-    end
-
-    def set_clusters
-      @clusters = @k.times.map do |i|
-        centroid = NArray.ref @centroids[true, i].flatten
-        c = Cluster.new i, Point.new(-i, centroid)
-        point_ids = @cluster_assigns.eq(i).where
-        point_ids.each do |p|
-          c << @points[p]
-        end
-        c
-      end
     end
 
     def get_point i
