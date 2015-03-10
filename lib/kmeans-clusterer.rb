@@ -160,25 +160,26 @@ class KMeansClusterer
     start_time = Time.now
     @iterations, @runtime = 0, 0
 
-    @cluster_point_ids = Array.new(@k) { [] }
-
     loop do
       @iterations +=1
 
+      @cluster_assigns = NArray.int(@points_count)
+      min_distances = NArray.new(@typecode, @points_count).fill! Float::INFINITY
       distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
 
-      # assign point ids to @cluster_point_ids
-      @points_count.times do |i|
-        min_distance_index = distances[i, true].sort_index[0]
-        @cluster_point_ids[min_distance_index] << i
+      @k.times do |cluster_id|
+        dist = NArray.ref distances[true, cluster_id].flatten
+        mask = dist < min_distances
+        @cluster_assigns[mask] = cluster_id
+        min_distances[mask] = dist[mask]
       end
 
       moves = []
       updated_centroids = []
 
-      @k.times do |i|
-        centroid = NArray.ref(@centroids[true, i].flatten)
-        point_ids = @cluster_point_ids[i]
+      @k.times do |cluster_id|
+        centroid = NArray.ref(@centroids[true, cluster_id].flatten)
+        point_ids = @cluster_assigns.eq(cluster_id).where
 
         if point_ids.empty?
           newcenter = centroid
@@ -196,8 +197,6 @@ class KMeansClusterer
 
       break if moves.max < 0.001 # i.e., no movement
       break if @iterations >= 300
-
-      @cluster_point_ids = Array.new(@k) { [] }
     end
 
     @error = calculate_error
@@ -321,7 +320,8 @@ class KMeansClusterer
       @clusters = @k.times.map do |i|
         centroid = NArray.ref @centroids[true, i].flatten
         c = Cluster.new i, Point.new(-i, centroid)
-        @cluster_point_ids[i].each do |p|
+        point_ids = @cluster_assigns.eq(i).where
+        point_ids.each do |p|
           c << @points[p]
         end
         c
@@ -353,7 +353,7 @@ class KMeansClusterer
     end
 
     def get_points_for_centroid i
-      point_ids = @cluster_point_ids[i]
+      point_ids = @cluster_assigns.eq(i).where
       points = @points_matrix[true, point_ids]
       points.empty? ? NArray.sfloat(0) : NArray.ref(points)
     end
