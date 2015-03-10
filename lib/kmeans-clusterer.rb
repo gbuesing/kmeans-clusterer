@@ -159,13 +159,13 @@ class KMeansClusterer
   def run 
     start_time = Time.now
     @iterations, @runtime = 0, 0
-    min_distances = nil
+    @cluster_assigns = NArray.int(@points_count)
+    min_distances = NArray.new(@typecode, @points_count)
 
     loop do
       @iterations +=1
-
-      @cluster_assigns = NArray.int(@points_count)
-      min_distances = NArray.new(@typecode, @points_count).fill! Float::INFINITY
+      
+      min_distances.fill! Float::INFINITY
       distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
 
       @k.times do |cluster_id|
