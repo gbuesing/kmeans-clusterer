@@ -65,3 +65,7 @@ After running k-means, a test set of digits will be classified (by finding the c
 Example PNG output with k=20:
 
 ![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k20.png)
+
+Output of the training set instances closest to the cluster centroids:
+
+![MNIST clustering example](https://raw.githubusercontent.com/gbuesing/kmeans-clusterer/master/examples/data/mnist_k20_closest.png)

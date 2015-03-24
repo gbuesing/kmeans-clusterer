@@ -71,25 +71,14 @@ end
 
 # png output: show actual images
 
-unless skip_plot
-  require 'chunky_png'
-
-  predictions_images = Array.new(k) { [] }
-
-  orig_test = orig_data.slice(train_size, test_size)
-
-  predictions.each_with_index do |predict, i|
-    label = test_labels[i]
-    predictions_images[predict] << orig_test[i]
-  end
-
+def image_grid data_groups, filename
   image_size = 28
   max_per_row = 25
-  gridrows, gridcols = k, 25
+  gridrows, gridcols = data_groups.length, 25
 
   @png = ChunkyPNG::Image.new(gridcols * image_size, gridrows * image_size, ChunkyPNG::Color::TRANSPARENT)
 
-  predictions_images.each.with_index do |images, gridrow|
+  data_groups.each.with_index do |images, gridrow|
     gridrow_offset = gridrow * image_size
     images.slice(0,max_per_row).each.with_index do |image, gridcol|
       gridcol_offset = gridcol * image_size
@@ -109,9 +98,30 @@ unless skip_plot
     end
   end
 
-  image_path = "examples/data/output/mnist_#{train_size}_#{runs}.png"
-  puts "\nSaving png to #{image_path}"
-  @png.save image_path, :compression => Zlib::NO_COMPRESSION
+  # image_path = "examples/data/output/mnist_#{train_size}_#{runs}.png"
+  puts "\nSaving png to #{filename}"
+  @png.save filename, :compression => Zlib::NO_COMPRESSION
 
-  `open #{image_path}`
+  `open #{filename}`
+end
+
+unless skip_plot
+  require 'chunky_png'
+
+  predictions_images = Array.new(k) { [] }
+
+  orig_test = orig_data.slice(train_size, test_size)
+
+  predictions.each_with_index do |predict, i|
+    label = test_labels[i]
+    predictions_images[predict] << orig_test[i]
+  end
+
+  image_grid predictions_images, "examples/data/output/mnist_#{train_size}_#{runs}.png"
+
+  orig_predictions = kmeans.clusters.map do |cluster| 
+    cluster.points.slice(0,25).map {|p| orig_data[p.id] }
+  end
+
+  image_grid orig_predictions, "examples/data/output/mnist_#{train_size}_#{runs}_closest.png"
 end
