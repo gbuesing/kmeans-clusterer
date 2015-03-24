@@ -46,12 +46,13 @@ class KMeansClusterer
 
 
   class Point
-    attr_reader :id, :data
+    attr_reader :id, :data, :centroid_distances
     attr_accessor :cluster, :label
 
-    def initialize id, data, label = nil
+    def initialize id, data, centroid_distances, label = nil
       @id = id
       @data = data
+      @centroid_distances = centroid_distances
       @label = label
     end
 
@@ -69,6 +70,10 @@ class KMeansClusterer
 
     def dimension
       @data.length
+    end
+
+    def centroid_distance
+      @centroid_distances[@cluster.id]
     end
   end
 
@@ -167,10 +172,10 @@ class KMeansClusterer
       @iterations +=1
 
       min_distances.fill! Float::INFINITY
-      distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
+      @distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
 
       @k.times do |cluster_id|
-        dist = NArray.ref distances[true, cluster_id].flatten
+        dist = NArray.ref @distances[true, cluster_id].flatten
         mask = dist < min_distances
         @cluster_assigns[mask] = cluster_id
         min_distances[mask] = dist[mask]
@@ -203,15 +208,19 @@ class KMeansClusterer
   def finish
     @clusters = @k.times.map do |i|
       centroid = NArray.ref @centroids[true, i].flatten
-      Cluster.new i, Point.new(-i, centroid)
+      Cluster.new i, Point.new(-1, centroid, nil, nil)
     end
 
     @points = @points_count.times.map do |i|
       data = NArray.ref @points_matrix[true, i].flatten
-      point = Point.new(i, data, @labels[i])
+      point = Point.new(i, data, @distances[i, true], @labels[i])
       cluster = @clusters[@cluster_assigns[i]]
-      cluster.points << point
+      cluster << point
       point
+    end
+
+    @clusters.each do |c| 
+      c.points.sort_by! &:centroid_distance
     end
 
     self
@@ -236,17 +245,13 @@ class KMeansClusterer
   def silhouette
     return 1.0 if @k < 2
 
-    distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
+    scores = @points.map do |point|
+      sort_index = point.centroid_distances.sort_index
+      c1_points = get_points_for_cluster sort_index[0]
+      c2_points = get_points_for_cluster sort_index[1]
 
-    scores = @points_count.times.map do |i|
-      point = get_point i
-      cluster_indexes = distances[i, true].sort_index
-
-      c1_points = get_points_for_centroid cluster_indexes[0]
-      c2_points = get_points_for_centroid cluster_indexes[1]
-
-      a = dissimilarity(c1_points, point)
-      b = dissimilarity(c2_points, point)
+      a = dissimilarity(c1_points, point.data)
+      b = dissimilarity(c2_points, point.data)
       (b - a) / [a,b].max
     end
 
@@ -316,15 +321,11 @@ class KMeansClusterer
       @points_count.times.to_a.sample @k
     end
 
-    def get_point i
-      NArray.ref @points_matrix[true, i].flatten
-    end
-
     def get_centroid i
       NArray.ref(@centroids[true, i].flatten)
     end
 
-    def get_points_for_centroid i
+    def get_points_for_cluster i
       point_ids = @cluster_assigns.eq(i).where
       points = @points_matrix[true, point_ids]
       points.empty? ? NArray.sfloat(0) : NArray.ref(points)
