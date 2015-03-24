@@ -121,7 +121,7 @@ class KMeansClusterer
       opts[:std] = std
     end
 
-    opts[:points_matrix] = data
+    opts[:data] = data
     opts[:row_norms] = Scaler.row_norms(data)
 
     bestrun = nil
@@ -142,7 +142,7 @@ class KMeansClusterer
   end
 
 
-  attr_reader :k, :points, :clusters, :centroids, :error, :mean, :std, :iterations, :runtime, :distances
+  attr_reader :k, :points, :clusters, :centroids, :error, :mean, :std, :iterations, :runtime, :distances, :data
 
 
   def initialize opts = {}
@@ -151,8 +151,8 @@ class KMeansClusterer
     @labels = opts[:labels] || []
     @row_norms = opts[:row_norms]
 
-    @points_matrix = opts[:points_matrix]
-    @points_count = @points_matrix.shape[1] if @points_matrix
+    @data = opts[:data]
+    @points_count = @data.shape[1] if @data
     @mean = opts[:mean]
     @std = opts[:std]
     @scale_data = opts[:scale_data]
@@ -172,7 +172,7 @@ class KMeansClusterer
       @iterations +=1
 
       min_distances.fill! Float::INFINITY
-      @distances = Distance.euclidean(@centroids, @points_matrix, @row_norms)
+      @distances = Distance.euclidean(@centroids, @data, @row_norms)
 
       @k.times do |cluster_id|
         dist = NArray.ref @distances[true, cluster_id].flatten
@@ -188,7 +188,7 @@ class KMeansClusterer
         point_ids = @cluster_assigns.eq(cluster_id).where
 
         unless point_ids.empty?
-          points = @points_matrix[true, point_ids]
+          points = @data[true, point_ids]
           newcenter = points.mean(1)
           move = Distance.euclidean(centroid, newcenter)
           max_move = move if move > max_move
@@ -212,7 +212,7 @@ class KMeansClusterer
     end
 
     @points = @points_count.times.map do |i|
-      data = NArray.ref @points_matrix[true, i].flatten
+      data = NArray.ref @data[true, i].flatten
       point = Point.new(i, data, @distances[i, true], @labels[i])
       cluster = @clusters[@cluster_assigns[i]]
       cluster << point
@@ -287,9 +287,9 @@ class KMeansClusterer
       centroid_ids << pick
 
       while centroid_ids.length < @k
-        centroids = @points_matrix[true, centroid_ids]
+        centroids = @data[true, centroid_ids]
 
-        distances = Distance.euclidean(centroids, @points_matrix, @row_norms)
+        distances = Distance.euclidean(centroids, @data, @row_norms)
 
         d2 = []
         @points_count.times do |i|
@@ -305,7 +305,7 @@ class KMeansClusterer
         centroid_ids << pick
       end
 
-      @centroids = @points_matrix[true, centroid_ids]
+      @centroids = @data[true, centroid_ids]
     end
 
     def custom_centroid_init
@@ -314,7 +314,7 @@ class KMeansClusterer
     end
 
     def random_centroid_init
-      @centroids = @points_matrix[true, pick_k_random_indexes]
+      @centroids = @data[true, pick_k_random_indexes]
     end
 
     def pick_k_random_indexes
@@ -327,7 +327,7 @@ class KMeansClusterer
 
     def get_points_for_cluster i
       point_ids = @cluster_assigns.eq(i).where
-      points = @points_matrix[true, point_ids]
+      points = @data[true, point_ids]
       points.empty? ? NArray.sfloat(0) : NArray.ref(points)
     end
 
