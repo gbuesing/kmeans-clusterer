@@ -30,6 +30,10 @@ class KMeansClusterer
 
   module Distance
     def self.euclidean x, y, yy = nil
+      # HACK to test cosine distance
+      # TODO make distance measure configurable
+      return cosine(x, y)
+
       if x.is_a?(NMatrix) && y.is_a?(NMatrix)
         xx = Scaler.row_norms(x)
         yy ||= Scaler.row_norms(y)
@@ -42,6 +46,41 @@ class KMeansClusterer
         NMath.sqrt ((x - y)**2).sum(0)
       end
     end
+
+    def self.normalize x
+      norm = NMath.sqrt Scaler.row_norms(x)
+      norm[norm.eq(0)] = 1.0
+      x.dup.div! norm
+    end
+
+    def self.cosine a, b
+      if a.is_a?(NMatrix) && b.is_a?(NMatrix)
+        a_normalized = normalize a
+        b_normalized = normalize b
+        sim = a_normalized * b_normalized.transpose
+        sim *= -1
+        sim.add! 1
+        sim
+      else
+        a_norm = NMath.sqrt (a**2).sum(0)
+        b_norm = NMath.sqrt (b**2).sum(0)
+        denom = a_norm * b_norm
+        if denom.is_a?(Float)
+          return 0.0 if denom == 0
+        else
+          denom[denom.eq(0.0)] = 1.0  
+        end
+        sim = (a * b).sum(0) / denom
+        sim *= -1
+        if sim.is_a?(NArray)
+          sim[sim.ne(0.0)] += 1
+        else
+          sim += 1
+        end
+        sim
+      end
+    end
+
   end
 
 
