@@ -41,7 +41,7 @@ if pca_components
   puts "\nRunning PCA with components=#{pca_components}..."
   t = Time.now
   pca = PCA.new components: pca_components
-  train_data = pca.fit_transform(train_data).to_nm
+  train_data = pca.fit_transform train_data
   elapsed = Time.now - t
   puts "\nPCA finished. Time #{elapsed.round(2)}s"
 end
@@ -68,7 +68,7 @@ puts "\nUsing kmeans to cluster #{test_size} samples from test set:\n\n"
 predictions_labels = Array.new(k) { [] }
 
 if pca_components
-  test_data = pca.transform(test_data).to_nm
+  test_data = pca.transform test_data
 end
 
 predictions = kmeans.predict test_data

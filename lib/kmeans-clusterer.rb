@@ -3,6 +3,18 @@ require 'narray'
 class KMeansClusterer
   TYPECODE = { double: NArray::DFLOAT, single: NArray::SFLOAT }
 
+  module Utils
+    def self.ensure_matrix x, typecode = nil
+      if x.is_a?(NMatrix)
+        x
+      elsif defined?(GSL::Matrix) && x.is_a?(GSL::Matrix)
+        x.to_nm
+      else
+        NMatrix.cast(x, typecode)
+      end
+    end
+  end
+
   module Scaler
     def self.mean data
       data.mean(1)
@@ -111,9 +123,7 @@ class KMeansClusterer
     opts[:k] = k
     opts[:typecode] = TYPECODE[opts[:float_precision]]
 
-    unless data.is_a?(NMatrix)
-      data = NMatrix.cast data, opts[:typecode]
-    end
+    data = Utils.ensure_matrix data, opts[:typecode]
 
     if opts[:scale_data]
       data, mean, std = Scaler.scale(data, nil, nil, opts[:typecode])
@@ -227,7 +237,7 @@ class KMeansClusterer
   end
 
   def predict data
-    data = NMatrix.cast(data, @typecode)
+    data = Utils.ensure_matrix data, @typecode
     data, _m, _s = Scaler.scale(data, @mean, @std, @typecode) if @scale_data
     distances = Distance.euclidean(@centroids, data)
     data.shape[1].times.map do |i|
