@@ -6,18 +6,20 @@ require_relative '../lib/kmeans-clusterer'
 require_relative './utils/mnist_loader'
 require 'narray'
 require 'optparse'
-
+require 'pca'
 
 k = 10
 train_size = 5000
 test_size = 200
 runs = 1 # not much seems to be gained by multiple runs for this example
 skip_plot = false
+pca_components = nil
 
 OptionParser.new do |opts|
   opts.on("-kK") {|v| k = v.to_i }
   opts.on("-nN") {|v| train_size = v.to_i }
   opts.on("--skip-plot") {|v| skip_plot = true }
+  opts.on("--pca-components=N") {|v| pca_components = v.to_i }
 end.parse!
 
 orig_data, labels = MnistLoader.training_set.get_data_and_labels(train_size + test_size)
@@ -27,7 +29,7 @@ data = orig_data.map do |row|
   row = NArray.to_na(row)
   row = row.reshape!(28,28)
   row = row[4..23, 4..23]
-  row.reshape!(20*20)
+  row.reshape!(20*20).to_a
 end
 
 
@@ -35,10 +37,19 @@ end
 train_data, train_labels = data.slice(0, train_size), labels.slice(0, train_size)
 test_data, test_labels = data.slice(train_size, test_size), labels.slice(train_size, test_size)
 
-puts "Clustering #{train_size} images:"
+if pca_components
+  puts "\nRunning PCA with components=#{pca_components}..."
+  t = Time.now
+  pca = PCA.new components: pca_components
+  train_data = pca.fit_transform(train_data).to_nm
+  elapsed = Time.now - t
+  puts "\nPCA finished. Time #{elapsed.round(2)}s"
+end
+
+puts "\nClustering #{train_size} images:"
 
 t = Time.now
-kmeans = KMeansClusterer.run(k, train_data, labels: train_labels, runs: runs, log: true, scale_data: true)
+kmeans = KMeansClusterer.run(k, train_data, labels: train_labels, runs: runs, log: true)
 elapsed = Time.now - t
 
 # kmeans.clusters.each do |cluster|
@@ -55,6 +66,10 @@ puts "\nUsing kmeans to cluster #{test_size} samples from test set:\n\n"
 # console output: show lables
 
 predictions_labels = Array.new(k) { [] }
+
+if pca_components
+  test_data = pca.transform(test_data).to_nm
+end
 
 predictions = kmeans.predict test_data
 
