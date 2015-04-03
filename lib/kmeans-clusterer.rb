@@ -255,13 +255,15 @@ class KMeansClusterer
   def silhouette
     return 1.0 if @k < 2
 
+    # calculate all point-to-point distances at once
+    # uses more memory, but much faster
+    point_distances = Distance.euclidean @data, @data
+
     scores = @points.map do |point|
       sort_index = point.centroid_distances.sort_index
-      c1_points = get_points_for_cluster sort_index[0]
-      c2_points = get_points_for_cluster sort_index[1]
-
-      a = dissimilarity(c1_points, point.data)
-      b = dissimilarity(c2_points, point.data)
+      c1, c2 = sort_index[0], sort_index[1]
+      a = dissimilarity point.id, c1, point_distances
+      b = dissimilarity point.id, c2, point_distances
       (b - a) / [a,b].max
     end
 
@@ -274,9 +276,10 @@ class KMeansClusterer
 
   private
 
-    def dissimilarity points, point
-      distances = Distance.euclidean points, point
-      distances.sum / distances.length.to_f
+    def dissimilarity point_id, cluster_id, point_distances
+      cluster_point_ids = @cluster_assigns.eq(cluster_id).where
+      cluster_point_distances = point_distances[cluster_point_ids, point_id]
+      cluster_point_distances.sum / cluster_point_distances.length
     end
 
     def init_centroids
