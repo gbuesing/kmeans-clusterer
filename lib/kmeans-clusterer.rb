@@ -3,6 +3,18 @@ require 'narray'
 class KMeansClusterer
   TYPECODE = { double: NArray::DFLOAT, single: NArray::SFLOAT }
 
+  module Utils
+    def self.ensure_matrix x, typecode = nil
+      if x.is_a?(NMatrix)
+        x
+      elsif defined?(GSL::Matrix) && x.is_a?(GSL::Matrix)
+        x.to_nm
+      else
+        NMatrix.cast(x, typecode)
+      end
+    end
+  end
+
   module Scaler
     def self.mean data
       data.mean(1)
@@ -150,9 +162,7 @@ class KMeansClusterer
     opts[:k] = k
     opts[:typecode] = TYPECODE[opts[:float_precision]]
 
-    unless data.is_a?(NMatrix)
-      data = NMatrix.cast data, opts[:typecode]
-    end
+    data = Utils.ensure_matrix data, opts[:typecode]
 
     if opts[:scale_data]
       data, mean, std = Scaler.scale(data, nil, nil, opts[:typecode])
@@ -266,7 +276,7 @@ class KMeansClusterer
   end
 
   def predict data
-    data = NMatrix.cast(data, @typecode)
+    data = Utils.ensure_matrix data, @typecode
     data, _m, _s = Scaler.scale(data, @mean, @std, @typecode) if @scale_data
     distances = Distance.euclidean(@centroids, data)
     data.shape[1].times.map do |i|
@@ -284,13 +294,15 @@ class KMeansClusterer
   def silhouette
     return 1.0 if @k < 2
 
+    # calculate all point-to-point distances at once
+    # uses more memory, but much faster
+    point_distances = Distance.euclidean @data, @data
+
     scores = @points.map do |point|
       sort_index = point.centroid_distances.sort_index
-      c1_points = get_points_for_cluster sort_index[0]
-      c2_points = get_points_for_cluster sort_index[1]
-
-      a = dissimilarity(c1_points, point.data)
-      b = dissimilarity(c2_points, point.data)
+      c1, c2 = sort_index[0], sort_index[1]
+      a = dissimilarity point.id, c1, point_distances
+      b = dissimilarity point.id, c2, point_distances
       (b - a) / [a,b].max
     end
 
@@ -303,9 +315,10 @@ class KMeansClusterer
 
   private
 
-    def dissimilarity points, point
-      distances = Distance.euclidean points, point
-      distances.sum / distances.length.to_f
+    def dissimilarity point_id, cluster_id, point_distances
+      cluster_point_ids = @cluster_assigns.eq(cluster_id).where
+      cluster_point_distances = point_distances[cluster_point_ids, point_id]
+      cluster_point_distances.sum / cluster_point_distances.length
     end
 
     def init_centroids
