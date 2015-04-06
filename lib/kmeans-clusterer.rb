@@ -260,10 +260,14 @@ class KMeansClusterer
     point_distances = Distance.euclidean @data, @data
 
     scores = @points.map do |point|
-      sort_index = point.centroid_distances.sort_index
-      c1, c2 = sort_index[0], sort_index[1]
-      a = dissimilarity point.id, c1, point_distances
-      b = dissimilarity point.id, c2, point_distances
+      dissimilarities = @clusters.map do |cluster|  
+        dissimilarity(point.id, cluster.id, point_distances)
+      end
+      a = dissimilarities[point.cluster.id]
+      # set to Infinity so we can pick next closest via min()
+      dissimilarities[point.cluster.id] = Float::INFINITY
+      b = dissimilarities.min
+
       (b - a) / [a,b].max
     end
 
@@ -279,7 +283,7 @@ class KMeansClusterer
     def dissimilarity point_id, cluster_id, point_distances
       cluster_point_ids = @cluster_assigns.eq(cluster_id).where
       cluster_point_distances = point_distances[cluster_point_ids, point_id]
-      cluster_point_distances.sum / cluster_point_distances.length
+      cluster_point_distances.mean
     end
 
     def init_centroids
