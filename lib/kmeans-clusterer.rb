@@ -338,16 +338,6 @@ class KMeansClusterer
       @points_count.times.to_a.sample @k
     end
 
-    def get_centroid i
-      NArray.ref(@centroids[true, i].flatten)
-    end
-
-    def get_points_for_cluster i
-      point_ids = @cluster_assigns.eq(i).where
-      points = @data[true, point_ids]
-      points.empty? ? NArray.sfloat(0) : NArray.ref(points)
-    end
-
     def origin
       Array.new(@points[0].dimension, 0) 
     end
