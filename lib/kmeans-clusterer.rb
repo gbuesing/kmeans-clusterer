@@ -305,16 +305,11 @@ class KMeansClusterer
 
       while centroid_ids.length < @k
         centroids = @data[true, centroid_ids]
-
         distances = Distance.euclidean(centroids, @data, @row_norms)
+        
+        # squared distances of each point to the nearest centroid
+        d2 = NArray.ref(distances.min(1).flatten)**2
 
-        d2 = []
-        @points_count.times do |i|
-          min_distance = distances[i, true].min
-          d2 << min_distance**2
-        end
-
-        d2 = NArray.cast(d2, @typecode)
         probs = d2 / d2.sum
         cumprobs = probs.cumsum
         r = rand
