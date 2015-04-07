@@ -299,10 +299,14 @@ class KMeansClusterer
     point_distances = Distance.euclidean @data, @data
 
     scores = @points.map do |point|
-      sort_index = point.centroid_distances.sort_index
-      c1, c2 = sort_index[0], sort_index[1]
-      a = dissimilarity point.id, c1, point_distances
-      b = dissimilarity point.id, c2, point_distances
+      dissimilarities = @clusters.map do |cluster|  
+        dissimilarity(point.id, cluster.id, point_distances)
+      end
+      a = dissimilarities[point.cluster.id]
+      # set to Infinity so we can pick next closest via min()
+      dissimilarities[point.cluster.id] = Float::INFINITY
+      b = dissimilarities.min
+
       (b - a) / [a,b].max
     end
 
@@ -318,7 +322,7 @@ class KMeansClusterer
     def dissimilarity point_id, cluster_id, point_distances
       cluster_point_ids = @cluster_assigns.eq(cluster_id).where
       cluster_point_distances = point_distances[cluster_point_ids, point_id]
-      cluster_point_distances.sum / cluster_point_distances.length
+      cluster_point_distances.mean
     end
 
     def init_centroids
@@ -340,16 +344,11 @@ class KMeansClusterer
 
       while centroid_ids.length < @k
         centroids = @data[true, centroid_ids]
-
         distances = Distance.euclidean(centroids, @data, @row_norms)
+        
+        # squared distances of each point to the nearest centroid
+        d2 = NArray.ref(distances.min(1).flatten)**2
 
-        d2 = []
-        @points_count.times do |i|
-          min_distance = distances[i, true].min
-          d2 << min_distance**2
-        end
-
-        d2 = NArray.cast(d2, @typecode)
         probs = d2 / d2.sum
         cumprobs = probs.cumsum
         r = rand
@@ -371,16 +370,6 @@ class KMeansClusterer
 
     def pick_k_random_indexes
       @points_count.times.to_a.sample @k
-    end
-
-    def get_centroid i
-      NArray.ref(@centroids[true, i].flatten)
-    end
-
-    def get_points_for_cluster i
-      point_ids = @cluster_assigns.eq(i).where
-      points = @data[true, point_ids]
-      points.empty? ? NArray.sfloat(0) : NArray.ref(points)
     end
 
     def origin
