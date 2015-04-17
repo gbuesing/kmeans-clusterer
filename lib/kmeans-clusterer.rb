@@ -162,7 +162,7 @@ class KMeansClusterer
     @row_norms = opts[:row_norms]
 
     @data = opts[:data]
-    @points_count = @data.shape[1] if @data
+    @points_count = @data ? @data.shape[1] : 0
     @mean = opts[:mean]
     @std = opts[:std]
     @scale_data = opts[:scale_data]
