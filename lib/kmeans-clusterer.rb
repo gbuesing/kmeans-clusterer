@@ -121,12 +121,12 @@ class KMeansClusterer
     opts = DEFAULT_OPTS.merge(opts)
 
     opts[:k] = k
-    opts[:typecode] = TYPECODE[opts[:float_precision]]
+    typecode = TYPECODE[opts[:float_precision]]
 
-    data = Utils.ensure_matrix data, opts[:typecode]
+    data = Utils.ensure_matrix data, typecode
 
     if opts[:scale_data]
-      data, mean, std = Scaler.scale(data, nil, nil, opts[:typecode])
+      data, mean, std = Scaler.scale(data, nil, nil, typecode)
       opts[:mean] = mean
       opts[:std] = std
     end
@@ -166,7 +166,7 @@ class KMeansClusterer
     @mean = opts[:mean]
     @std = opts[:std]
     @scale_data = opts[:scale_data]
-    @typecode = opts[:typecode]
+    @typecode = TYPECODE[opts[:float_precision] || :double]
     @max_iter = opts[:max_iter]
 
     init_centroids
