@@ -13,6 +13,10 @@ class KMeansClusterer
         NMatrix.cast(x, typecode)
       end
     end
+
+    def self.ensure_narray x, typecode = nil
+      x.is_a?(NArray) ? x : NArray.cast(x, typecode)
+    end
   end
 
   module Scaler
@@ -163,8 +167,8 @@ class KMeansClusterer
 
     @data = opts[:data]
     @points_count = @data ? @data.shape[1] : 0
-    @mean = opts[:mean]
-    @std = opts[:std]
+    @mean = Utils.ensure_narray(opts[:mean]) if opts[:mean]
+    @std = Utils.ensure_narray(opts[:std]) if opts[:std]
     @scale_data = opts[:scale_data]
     @typecode = TYPECODE[opts[:float_precision] || :double]
     @max_iter = opts[:max_iter]
