@@ -13,6 +13,10 @@ class KMeansClusterer
         NMatrix.cast(x, typecode)
       end
     end
+
+    def self.ensure_narray x, typecode = nil
+      x.is_a?(NArray) ? x : NArray.cast(x, typecode)
+    end
   end
 
   module Scaler
@@ -160,12 +164,12 @@ class KMeansClusterer
     opts = DEFAULT_OPTS.merge(opts)
 
     opts[:k] = k
-    opts[:typecode] = TYPECODE[opts[:float_precision]]
+    typecode = TYPECODE[opts[:float_precision]]
 
-    data = Utils.ensure_matrix data, opts[:typecode]
+    data = Utils.ensure_matrix data, typecode
 
     if opts[:scale_data]
-      data, mean, std = Scaler.scale(data, nil, nil, opts[:typecode])
+      data, mean, std = Scaler.scale(data, nil, nil, typecode)
       opts[:mean] = mean
       opts[:std] = std
     end
@@ -201,11 +205,11 @@ class KMeansClusterer
     @row_norms = opts[:row_norms]
 
     @data = opts[:data]
-    @points_count = @data.shape[1] if @data
-    @mean = opts[:mean]
-    @std = opts[:std]
+    @points_count = @data ? @data.shape[1] : 0
+    @mean = Utils.ensure_narray(opts[:mean]) if opts[:mean]
+    @std = Utils.ensure_narray(opts[:std]) if opts[:std]
     @scale_data = opts[:scale_data]
-    @typecode = opts[:typecode]
+    @typecode = TYPECODE[opts[:float_precision] || :double]
     @max_iter = opts[:max_iter]
 
     init_centroids

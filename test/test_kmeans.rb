@@ -87,4 +87,15 @@ class TestKMeansClusterer < MiniTest::Test
     assert_equal 1, predicted[1]
   end
 
+  def test_prediction_instance_init_with_custom_centroids_and_scale_data
+    km = KMeansClusterer.new  init: [[2,2], [-2,-2]], 
+                              scale_data: true, 
+                              mean: [0.0, 0.0], 
+                              std: [2.83, 2.83]
+                              
+    predicted = km.predict [[3,3], [-3,-3]]
+    assert_equal 0, predicted[0]
+    assert_equal 1, predicted[1]
+  end
+
 end
