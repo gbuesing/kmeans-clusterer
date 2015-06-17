@@ -27,7 +27,7 @@ get_basename = -> (docid) {
   basenames[fileid]
 }
 
-bag = BagOfWords.new idf: true
+bag = BagOfWords.new idf: false
 
 datafiles.each_with_index do |filename, i|
   File.open(filename).each do |line|

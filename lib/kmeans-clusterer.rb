@@ -42,13 +42,19 @@ class KMeansClusterer
       squared_data = NArray.ref(data)**2
       NMatrix.ref(squared_data).sum(0)
     end
+
+    def self.unit_normalize m
+      row_l2s = NMath.sqrt (NArray.ref(m)**2).sum(0)
+      row_l2s_vec = NVector.cast(row_l2s).reshape(1,row_l2s.shape[0])
+      m.div! row_l2s_vec
+    end
   end
 
   module Distance
     def self.euclidean x, y, yy = nil
       # HACK to test cosine distance
       # TODO make distance measure configurable
-      return cosine(x, y)
+      return cosine(x, y, yy)
 
       if x.is_a?(NMatrix) && y.is_a?(NMatrix)
         xx = Scaler.row_norms(x)
@@ -63,16 +69,17 @@ class KMeansClusterer
       end
     end
 
-    def self.normalize x
-      norm = NMath.sqrt Scaler.row_norms(x)
+    def self.normalize x, norms = nil
+      norms ||= Scaler.row_norms(x)
+      norm = NMath.sqrt norms
       norm[norm.eq(0)] = 1.0
       x.dup.div! norm
     end
 
-    def self.cosine a, b
+    def self.cosine a, b, bnorms = nil
       if a.is_a?(NMatrix) && b.is_a?(NMatrix)
         a_normalized = normalize a
-        b_normalized = normalize b
+        b_normalized = normalize b, bnorms
         sim = a_normalized * b_normalized.transpose
         sim *= -1
         sim.add! 1
@@ -174,6 +181,8 @@ class KMeansClusterer
       opts[:std] = std
     end
 
+    Scaler.unit_normalize data
+
     opts[:data] = data
     opts[:row_norms] = Scaler.row_norms(data)
 
@@ -242,7 +251,11 @@ class KMeansClusterer
 
         unless point_ids.empty?
           points = @data[true, point_ids]
-          newcenter = points.mean(1)
+          # newcenter = points.mean(1)
+          # http://www.cs.gsu.edu/~wkim/index_files/papers/refinehd.pdf
+          newcenter = NArray.ref points.sum(1).flatten
+          sl2 = Math.sqrt((newcenter**2).sum)
+          newcenter.div! sl2
           move = Distance.euclidean(centroid, newcenter)
           max_move = move if move > max_move
           @centroids[true, cluster_id] = newcenter
