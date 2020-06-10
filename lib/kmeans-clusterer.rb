@@ -107,6 +107,7 @@ class KMeansClusterer
     def << point
       point.cluster = self
       @points << point
+      recalc_centroid!
     end
 
     def sorted_points point = @centroid
@@ -115,6 +116,10 @@ class KMeansClusterer
       points_data = NArray.cast(@points.map(&:data))
       distances = Distance.euclidean(points_data, point)
       @points.sort_by.with_index {|p, i| distances[i] }
+    end
+
+    def recalc_centroid!
+      @centroid = Point.new(-1, NArray.cast(@points.map(&:data)).mean(1), nil, nil)
     end
   end
 
