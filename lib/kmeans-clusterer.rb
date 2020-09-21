@@ -146,7 +146,7 @@ class KMeansClusterer
       if opts[:log]
         puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{km.error.round(2)} err"
       end
-      
+
       if bestrun.nil? || (km.error < bestrun.error)
         bestrun = km
       end
@@ -156,8 +156,9 @@ class KMeansClusterer
   end
 
 
-  attr_reader :k, :points, :clusters, :centroids, :error, :mean, :std, :iterations, :runtime, :distances, :data
+  attr_reader :k, :points, :clusters, :centroids, :mean, :std, :distances, :data, :marshallized_data
 
+  attr_accessor :error, :iterations, :runtime
 
   def initialize opts = {}
     @k = opts[:k]
@@ -166,6 +167,7 @@ class KMeansClusterer
     @row_norms = opts[:row_norms]
 
     @data = opts[:data]
+
     @points_count = @data ? @data.shape[1] : 0
     @mean = Utils.ensure_narray(opts[:mean]) if opts[:mean]
     @std = Utils.ensure_narray(opts[:std]) if opts[:std]
@@ -176,7 +178,7 @@ class KMeansClusterer
     init_centroids
   end
 
-  def run 
+  def run
     start_time = Time.now
     @iterations, @runtime = 0, 0
     @cluster_assigns = NArray.int(@points_count)
@@ -233,7 +235,7 @@ class KMeansClusterer
       point
     end
 
-    @clusters.each do |c| 
+    @clusters.each do |c|
       c.points.sort_by! &:centroid_distance
     end
 
@@ -264,7 +266,7 @@ class KMeansClusterer
     point_distances = Distance.euclidean @data, @data
 
     scores = @points.map do |point|
-      dissimilarities = @clusters.map do |cluster|  
+      dissimilarities = @clusters.map do |cluster|
         dissimilarity(point.id, cluster.id, point_distances)
       end
       a = dissimilarities[point.cluster.id]
@@ -280,6 +282,27 @@ class KMeansClusterer
 
   def inspect
     %{#<#{self.class.name} k:#{@k} iterations:#{@iterations} error:#{@error} runtime:#{@runtime}>}
+  end
+
+  def marshallize(marshal_func = nil)
+    updated_values = marshal_func.call(self) if marshal_func
+    Marshal.dump(updated_values || self)
+  end
+
+  def self.demarshallize(serialized_values, marshal_func = nil)
+    result = Marshal.load(serialized_values)
+
+    return marshal_func.call(result) if marshal_func
+
+    result
+  end
+
+  def _dump(level)
+    default_marshal_dump_callback
+  end
+
+  def self._load(serialized_values)
+    default_marshal_load_callback(serialized_values)
   end
 
   private
@@ -310,7 +333,7 @@ class KMeansClusterer
       while centroid_ids.length < @k
         centroids = @data[true, centroid_ids]
         distances = Distance.euclidean(centroids, @data, @row_norms)
-        
+
         # squared distances of each point to the nearest centroid
         d2 = NArray.ref(distances.min(1).flatten)**2
 
@@ -338,6 +361,35 @@ class KMeansClusterer
     end
 
     def origin
-      Array.new(@points[0].dimension, 0) 
+      Array.new(@points[0].dimension, 0)
+    end
+
+    def default_marshal_dump_callback
+      {
+        k: @k,
+        init: self.centroids.to_a,
+        labels: @labels,
+        row_norms: @row_norms.to_a,
+        data: @data.to_a,
+        points_count: @points_count,
+        scale_data: @scale_data,
+        type_code: @typecode,
+        float_precision: TYPECODE.select{ |key, value| value == @typecode }.keys[0],
+        max_iter: @max_iter,
+        iterations: @iterations,
+        error: @error,
+        runtime: @runtime
+      }.to_json
+    end
+
+    def self.default_marshal_load_callback(serialized_values)
+      values = JSON.parse(serialized_values, {symbolize_names: true})
+      values[:row_norms] = Utils.ensure_narray(values[:row_norms], values[:typecode])
+      values[:data] = Utils.ensure_narray(values[:data], values[:typecode])
+      result = self.new(values)
+      result.iterations = values[:iterations]
+      result.error = values[:error]
+      result.runtime = values[:runtime]
+      result
     end
 end
