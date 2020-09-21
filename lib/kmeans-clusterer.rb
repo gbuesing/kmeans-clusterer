@@ -146,7 +146,7 @@ class KMeansClusterer
       if opts[:log]
         puts "[#{i + 1}] #{km.iterations} iter\t#{km.runtime.round(2)}s\t#{km.error.round(2)} err"
       end
-      
+
       if bestrun.nil? || (km.error < bestrun.error)
         bestrun = km
       end
@@ -166,6 +166,7 @@ class KMeansClusterer
     @row_norms = opts[:row_norms]
 
     @data = opts[:data]
+
     @points_count = @data ? @data.shape[1] : 0
     @mean = Utils.ensure_narray(opts[:mean]) if opts[:mean]
     @std = Utils.ensure_narray(opts[:std]) if opts[:std]
@@ -176,7 +177,7 @@ class KMeansClusterer
     init_centroids
   end
 
-  def run 
+  def run
     start_time = Time.now
     @iterations, @runtime = 0, 0
     @cluster_assigns = NArray.int(@points_count)
@@ -233,7 +234,7 @@ class KMeansClusterer
       point
     end
 
-    @clusters.each do |c| 
+    @clusters.each do |c|
       c.points.sort_by! &:centroid_distance
     end
 
@@ -264,7 +265,7 @@ class KMeansClusterer
     point_distances = Distance.euclidean @data, @data
 
     scores = @points.map do |point|
-      dissimilarities = @clusters.map do |cluster|  
+      dissimilarities = @clusters.map do |cluster|
         dissimilarity(point.id, cluster.id, point_distances)
       end
       a = dissimilarities[point.cluster.id]
@@ -280,6 +281,22 @@ class KMeansClusterer
 
   def inspect
     %{#<#{self.class.name} k:#{@k} iterations:#{@iterations} error:#{@error} runtime:#{@runtime}>}
+  end
+
+  def _dump(level, marshal_function: nil)
+    if marshal_function
+      marshal_function.call
+    else
+      self.centroids.to_a.to_s
+    end
+  end
+
+  def self._load(serialized_values, marshal_function: nil)
+    if marshal_function
+      marshal_function.call(serialized_values)
+    else
+      JSON.parse(serialized_values)
+    end
   end
 
   private
@@ -310,7 +327,7 @@ class KMeansClusterer
       while centroid_ids.length < @k
         centroids = @data[true, centroid_ids]
         distances = Distance.euclidean(centroids, @data, @row_norms)
-        
+
         # squared distances of each point to the nearest centroid
         d2 = NArray.ref(distances.min(1).flatten)**2
 
@@ -338,6 +355,6 @@ class KMeansClusterer
     end
 
     def origin
-      Array.new(@points[0].dimension, 0) 
+      Array.new(@points[0].dimension, 0)
     end
 end
