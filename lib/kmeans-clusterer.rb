@@ -156,8 +156,9 @@ class KMeansClusterer
   end
 
 
-  attr_reader :k, :points, :clusters, :centroids, :error, :mean, :std, :iterations, :runtime, :distances, :data
+  attr_reader :k, :points, :clusters, :centroids, :mean, :std, :distances, :data, :marshallized_data
 
+  attr_accessor :error, :iterations, :runtime
 
   def initialize opts = {}
     @k = opts[:k]
@@ -283,20 +284,25 @@ class KMeansClusterer
     %{#<#{self.class.name} k:#{@k} iterations:#{@iterations} error:#{@error} runtime:#{@runtime}>}
   end
 
-  def _dump(level, marshal_function: nil)
-    if marshal_function
-      marshal_function.call
-    else
-      self.centroids.to_a.to_s
-    end
+  def marshallize(marshal_func = nil)
+    updated_values = marshal_func.call(self) if marshal_func
+    Marshal.dump(updated_values || self)
   end
 
-  def self._load(serialized_values, marshal_function: nil)
-    if marshal_function
-      marshal_function.call(serialized_values)
-    else
-      JSON.parse(serialized_values)
-    end
+  def self.demarshallize(serialized_values, marshal_func = nil)
+    result = Marshal.load(serialized_values)
+
+    return marshal_func.call(result) if marshal_func
+
+    result
+  end
+
+  def _dump(level)
+    default_marshal_dump_callback
+  end
+
+  def self._load(serialized_values)
+    default_marshal_load_callback(serialized_values)
   end
 
   private
@@ -356,5 +362,34 @@ class KMeansClusterer
 
     def origin
       Array.new(@points[0].dimension, 0)
+    end
+
+    def default_marshal_dump_callback
+      {
+        k: @k,
+        init: self.centroids.to_a,
+        labels: @labels,
+        row_norms: @row_norms.to_a,
+        data: @data.to_a,
+        points_count: @points_count,
+        scale_data: @scale_data,
+        type_code: @typecode,
+        float_precision: TYPECODE.select{ |key, value| value == @typecode }.keys[0],
+        max_iter: @max_iter,
+        iterations: @iterations,
+        error: @error,
+        runtime: @runtime
+      }.to_json
+    end
+
+    def self.default_marshal_load_callback(serialized_values)
+      values = JSON.parse(serialized_values, {symbolize_names: true})
+      values[:row_norms] = Utils.ensure_narray(values[:row_norms], values[:typecode])
+      values[:data] = Utils.ensure_narray(values[:data], values[:typecode])
+      result = self.new(values)
+      result.iterations = values[:iterations]
+      result.error = values[:error]
+      result.runtime = values[:runtime]
+      result
     end
 end
